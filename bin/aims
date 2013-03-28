@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+#
+# This module is part of aims, an iptables scripting language.
+#
+#
+
+use strict;
+use warnings;
+
+use Aims::Core qw(compile);
+
+my $out = compile('aims.rules');
+
+foreach my $l (@$out) {
+    print $l."\n";
+}
