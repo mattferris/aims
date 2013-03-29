@@ -28,6 +28,7 @@ our @EXPORT_OK = qw(
     getcomment setcomment
     ifexists protoexists
     bracelist parenlist
+    tokenpos
 );
 
 
@@ -536,10 +537,10 @@ sub bracelist
     }
 
     # use reverse to put the new rules in the order the values are in the list
-    foreach my $e (reverse(@$list)) {
+    foreach my $t (reverse(@$list)) {
         my $newline = copyline($line);
-         splice(@$newline, $pos, $bracelen, $e);
-         addline($newline);
+        splice(@$newline, $pos, $bracelen, $t);
+        addline($newline);
     }
 
     # don't compile the current rule
@@ -583,8 +584,7 @@ sub parenlist
     }
 
     splice(@$line, $pos, $parenlen);
-
-    return $opts;
+    $line->[$pos-1]->{'options'} = $opts;
 }
 
 
@@ -688,6 +688,35 @@ sub ifexists
     my $if = shift;
     return defined($interfaces->{$if});
 }
+
+
+##
+# tokenpos
+#
+# Return the index of a given token in a rule
+#
+# $type Type of token to search for
+# $line The line to search
+#
+# Return index if token is found, else return -1
+#
+sub tokenpos
+{
+    my $type = shift;
+    my $line = shift;
+
+    my $index = -1;
+
+    for (my $i=0; $i<@$line; $i++) {
+        if ($line->[$i]->{'type'} eq $type) {
+            $index = $i;
+            last;
+        }
+    }
+
+    return $index;
+}
+
 
 
 1;
