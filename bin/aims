@@ -7,9 +7,13 @@
 use strict;
 use warnings;
 
-use Aims::Core qw(compile);
+use Aims::Main qw(compile getcompiled);
+use Aims::Base;
+use Aims::Filter;
+use Aims::NAT;
 
-my $out = compile('aims.rules');
+compile('aims.rules');
+my $out = getcompiled();
 
 foreach my $l (@$out) {
     print $l."\n";
