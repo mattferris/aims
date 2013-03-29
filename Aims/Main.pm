@@ -29,7 +29,7 @@ our @EXPORT_OK = qw(
     getcomment setcomment
     ifexists protoexists getifaddr getifnet getifbcast getifmask if2host
     bracelist parenlist
-    tokenpos
+    tokenpos protocheck
 );
 
 
@@ -235,6 +235,7 @@ sub newscope
 {
     my $scope = {
         file => '',
+        line => [],
         lines => [],
         rule => {},
         ruleset => [],
@@ -806,6 +807,52 @@ sub tokenpos
     return $index;
 }
 
+
+##
+# protocheck
+#
+# Check if the rule specifies a protocol, if not throw an error
+#
+# $token The token currently being processed
+# $rule The (optional) rule to check, or the current rule if none defined
+#
+# Return 1 if a protocol is specified, else returns 0
+#
+sub protocheck
+{
+    my $token = shift;
+    my $rule = shift;
+    $rule = getrule() if !defined($rule);
+
+    # make sure a proto has been specified
+    my $hasproto = 0;
+    foreach my $exp (@{$rule->{'matchexp'}}) {
+        if ($exp =~ /^-p\s.+$/) {
+             $hasproto = 1;
+             last;
+        }
+    }
+
+    if (!$hasproto) {
+        my $err = {
+            file => $token->{'file'},
+            line => $token->{'line'},
+            char => $token->{'char'}
+        };
+
+        if (getoption('strict') eq 'on') {
+            $err->{'code'} = 'E_PORT_WITHOUT_PROTOCOL';
+            error($err);
+        }
+        else {
+            $err->{'code'} = 'W_PORT_WITHOUT_PROTOCOL';
+            warn($err);
+            push(@{$rule->{'matchexp'}}, '-p all');
+        }
+    }
+
+    return $hasproto;
+}
 
 
 1;

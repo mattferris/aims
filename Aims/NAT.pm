@@ -12,7 +12,7 @@ use Aims::Main qw(
     newrule getrule skiprule ruleskipped
     setcomment getcomment
     ifexists protoexists copyline if2host
-    addline getoption tokenpos
+    addline getoption tokenpos protocheck
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Parser qw(ontoken);
@@ -80,6 +80,9 @@ ontoken('T_CLAUSE_RDR_TO', sub {
 
         # port only redirect
         if ($peek->{'type'} eq 'T_CLAUSE_PORT') {
+            # make sure a proto has been specified
+            protocheck($token, $rule);
+
             my $port = $line->[$tpos+2]->{'value'};
             my $exp;
             if ($port =~ /^(random|persistent)/) {
@@ -97,6 +100,8 @@ ontoken('T_CLAUSE_RDR_TO', sub {
             # are we setting a port as well?
             my $peek2 = $line->[$tpos+2];
             if (defined($peek2) && $peek2->{'type'} eq 'T_CLAUSE_PORT') {
+                # make sure a proto has been specified
+                protocheck($token, $rule);
                 $exp .= ":$line->[$tpos+3]->{'value'}";
             }
             push(@{$rule->{'targetexp'}}, $exp);
@@ -183,6 +188,9 @@ ontoken('T_CLAUSE_NAT_TO', sub {
 
         # port only redirect
         if ($peek->{'type'} eq 'T_CLAUSE_PORT') {
+            # make sure a proto has been specified
+            protocheck($token, $rule);
+
             my $port = $line->[$tpos+2]->{'value'};
             my $exp;
             if ($port =~ /^(random)/) {
@@ -200,6 +208,8 @@ ontoken('T_CLAUSE_NAT_TO', sub {
             # are we setting a port as well?
             my $peek2 = $line->[$tpos+2];
             if (defined($peek2) && $peek2->{'type'} eq 'T_CLAUSE_PORT') {
+                # make sure a proto has been specified
+                protocheck($token, $rule);
                 $exp .= ":$line->[$tpos+3]->{'value'}";
             }
             push(@{$rule->{'targetexp'}}, $exp);

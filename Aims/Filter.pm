@@ -15,7 +15,7 @@ use Aims::Main qw(
     setcomment getcomment
     ifexists getifnet getifbcast getifaddr getifmask if2host
     protoexists bracelist parenlist
-    tokenpos getoption
+    tokenpos getoption protocheck
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Parser qw(ontoken);
@@ -291,23 +291,8 @@ ontoken('T_CLAUSE_FROM', sub {
     my $nextt = $line->[$tpos+1];
 
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
-        if (tokenpos('T_CLAUSE_PROTO', $line) == -1) {
-            my $err = {
-                file => $nextt->{'file'},
-                line => $nextt->{'line'},
-                char => $nextt->{'char'}
-            };
-
-            if (getoption('strict') eq 'on') {
-                $err->{'code'} = 'E_PORT_WITHOUT_PROTOCOL';
-                error($err);
-            }
-            else {
-                $err->{'code'} = 'W_PORT_WITHOUT_PROTOCOL';
-                warn($err);
-                push(@{$rule->{'matchexp'}}, '-p all');
-            }
-        }
+        # check if a proto has been specified
+        protocheck($token, $rule);
 
         my $port = $line->[$tpos+2];
         if ($port->{'type'} eq 'T_OPEN_BRACE') {
@@ -342,23 +327,8 @@ ontoken('T_CLAUSE_TO', sub {
     my $nextt = $line->[$tpos+1];
 
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
-        if (tokenpos('T_CLAUSE_PROTO', $line) == -1) {
-            my $err = {
-                file => $nextt->{'file'},
-                line => $nextt->{'line'},
-                char => $nextt->{'char'}
-            };
-
-            if (getoption('strict') eq 'on') {
-                $err->{'code'} = 'E_PORT_WITHOUT_PROTOCOL';
-                error($err);
-            }
-            else {
-                $err->{'code'} = 'W_PORT_WITHOUT_PROTOCOL';
-                warn($err);
-                push(@{$rule->{'matchexp'}}, '-p all');
-            }
-        }
+        # check if a proto has been specified
+        protocheck($token, $rule);
 
         my $port = $line->[$tpos+2];
         if ($port->{'type'} eq 'T_OPEN_BRACE') {
