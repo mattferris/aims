@@ -178,11 +178,18 @@ ontoken('T_CLAUSE_LOG', sub {
         }
 
         # process supplied options via parenthesis ()
-        if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_PARENTHESIS') {
-            my $logopts = parenlist($tpos+1, $line);
-            foreach my $k (keys(%$logopts)) {
-                $opts->{$k} = $logopts->{$k};
-            }
+        my $peek = $line->[$tpos+1];
+        my $logopts = [];
+        if ($peek->{'type'} eq 'T_OPEN_PARENTHESIS') {
+            parenlist($tpos+1, $line);
+        }
+
+        if (defined($token->{'options'})) {
+            $logopts = $token->{'options'};
+        }
+
+        foreach my $k (keys(%$logopts)) {
+            $opts->{$k} = $logopts->{$k};
         }
 
         # include logging options in the rule
