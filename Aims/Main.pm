@@ -55,14 +55,14 @@ my $scopes = [];
 
 # default options
 my $defoptions = {
-    'comment.inline' => 'off',
-    'comment.origin' => 'off',
+    'inline-comments' => 'off',
+    'origin-comments' => 'off',
     'debug' => 'off',
-    'log.level' => '',
-    'log.prefix' => '',
-    'log.tcp_sequence' => 'off',
-    'log.tcp_options' => 'off',
-    'log.uid' => 'off',
+    'log-level' => '',
+    'log-prefix' => '',
+    'log-tcp-sequence' => 'off',
+    'log-tcp-options' => 'off',
+    'log-uid' => 'off',
     'strict' => 'off',
 };
 
@@ -561,28 +561,28 @@ sub bracelist
 #
 sub parenlist
 {
-    my $tpos = shift;
-    my $tokens = shift;
+    my $pos = shift;
+    my $line = shift;
 
     my $opts = {};
 
     # start at the next token, which is the first option/value pair
     my $parenlen = 1;
-    for (my $i=1; $i<@$tokens; $i++) {
-        if ($tokens->[$tpos+$i]->{'type'} eq 'T_CLOSE_PARENTHESIS') {
+    for (my $i=1; $i<@$line; $i++) {
+        if ($line->[$pos+$i]->{'type'} eq 'T_CLOSE_PARENTHESIS') {
             $parenlen++;
             last;
         }
-        if ($tokens->[$tpos+$i]->{'type'} ne 'T_COMMA') {
-            my $opt = $tokens->[$tpos+$i]->{'value'};
-            my $val = $tokens->[$tpos+$i+1]->{'value'};
+        if ($line->[$pos+$i]->{'type'} ne 'T_COMMA') {
+            my $opt = $line->[$pos+$i]->{'value'};
+            my $val = $line->[$pos+$i+1]->{'value'};
             $opts->{$opt} = $val;
             $i++;
         }
         $parenlen++;
     }
 
-    splice(@$tokens, $tpos, $parenlen);
+    splice(@$line, $pos, $parenlen);
 
     return $opts;
 }

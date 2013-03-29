@@ -70,13 +70,13 @@ sub newlineeof {
             line => $token->{'line'}
         };
     }
-$valid = 1;
+
     if ($valid == 1) {
         if ($rule->{'comment'} eq '') {
-            if (getoption('comment.inline') eq 'on' && getcomment() ne '') {
+            if (getoption('inline-comments') eq 'on' && getcomment() ne '') {
                 $rule->{'comment'} = getcomment();
             }
-            elsif (getoption('comment.origin') eq 'on') {
+            elsif (getoption('origin-comments') eq 'on') {
                 my $absfile = File::Spec->rel2abs($token->{'file'});
                 $rule->{'comment'} = "$absfile:$token->{'line'}";
             }
@@ -152,9 +152,7 @@ ontoken('T_CLAUSE_LOG', sub {
         my $origline = copyline($line);
 
         # remove the paren list from the original rule
-        my $haslogopts = 0;
         if ($origline->[$tpos+1]->{'type'} eq 'T_OPEN_PARENTHESIS') {
-            $haslogopts = 1;
             parenlist($tpos+1, $origline);
         }
 
@@ -174,7 +172,7 @@ ontoken('T_CLAUSE_LOG', sub {
 
         # copy global logging options
         my $opts = {};
-        my $keys = ['log.level', 'log.prefix', 'log.tcp_sequence', 'log.tcp_options', 'log.uid'];
+        my $keys = ['log-level', 'log-prefix', 'log-tcp-sequence', 'log-tcp-options', 'log-uid'];
         foreach my $k (@$keys) {
             $opts->{$k} = getoption($k);
         }
@@ -188,19 +186,19 @@ ontoken('T_CLAUSE_LOG', sub {
         }
 
         # include logging options in the rule
-        if ($opts->{'log.level'} ne '') {
-            push(@{$rule->{'targetexp'}}, "--log-level $opts->{'log.level'}");
+        if ($opts->{'log-level'} ne '') {
+            push(@{$rule->{'targetexp'}}, "--log-level '$opts->{'log-level'}'");
         }
-        if ($opts->{'log.prefix'} ne '') {
-            push(@{$rule->{'targetexp'}}, "--log-prefix '$opts->{'log.prefix'}'");
+        if ($opts->{'log-prefix'} ne '') {
+            push(@{$rule->{'targetexp'}}, "--log-prefix '$opts->{'log-prefix'}'");
         }
-        if ($opts->{'log.tcp_sequence'} eq 'on') {
+        if ($opts->{'log-tcp-sequence'} eq 'on') {
             push(@{$rule->{'targetexp'}}, "--log-tcp-sequence");
         }
-        if ($opts->{'log.tcp_options'} eq 'on') {
+        if ($opts->{'log-tcp-options'} eq 'on') {
             push(@{$rule->{'targetexp'}}, "--log-tcp-options");;
         }
-        if ($opts->{'log.uid'} eq 'on') {
+        if ($opts->{'log-uid'} eq 'on') {
             push(@{$rule->{'targetexp'}}, "--log-uid");
         }
     }
@@ -313,7 +311,7 @@ ontoken('T_COMMENT', sub {
     my $line = shift;
 
     skiprule();
-    if (getoption('comment.inline') ne 'on') {
+    if (getoption('inline-comments') ne 'on') {
         return;
     }
     else {
