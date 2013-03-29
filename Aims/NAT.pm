@@ -11,7 +11,7 @@ use warnings;
 use Aims::Main qw(
     newrule getrule skiprule ruleskipped
     setcomment getcomment
-    ifexists protoexists copyline
+    ifexists protoexists copyline if2host
     addline
     getoption
 );
@@ -103,7 +103,7 @@ ontoken('T_CLAUSE_RDR_TO', sub {
 
         # ip and perhaps port redirect
         else {
-            my $exp = "--to-destination $peek->{'value'}";
+            my $exp = "--to-destination ".if2host($peek->{'value'});
             # are we setting a port as well?
             my $peek2 = $line->[$tpos+2];
             if (defined($peek2) && $peek2->{'type'} eq 'T_CLAUSE_PORT') {
@@ -215,7 +215,7 @@ ontoken('T_CLAUSE_NAT_TO', sub {
 
         # ip and perhaps port redirect
         else {
-            my $exp = "--to-source $peek->{'value'}";
+            my $exp = "--to-source ".if2host($peek->{'value'});
             # are we setting a port as well?
             my $peek2 = $line->[$tpos+2];
             if (defined($peek2) && $peek2->{'type'} eq 'T_CLAUSE_PORT') {

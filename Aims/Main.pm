@@ -10,6 +10,7 @@ use warnings;
 
 use File::Spec;
 
+use Aims::NetAddr qw (ip2net ip2bcast);
 use Aims::Grammar qw($grammar);
 use Aims::Error qw(error warn debug);
 
@@ -26,7 +27,7 @@ our @EXPORT_OK = qw(
     getoption setoption
     getvar setvar
     getcomment setcomment
-    ifexists protoexists
+    ifexists protoexists getifaddr getifnet getifbcast getifmask if2host
     bracelist parenlist
     tokenpos
 );
@@ -49,8 +50,6 @@ delegate(sub {
 my $protocols = loadprotos();
 my $interfaces = loadifs();
 my $compiled = [];
-
-
 my $scopes = [];
 
 
@@ -642,7 +641,7 @@ sub loadifs
     my $ifs;
 
     open(my $in, "ip address|")
-        || error({code=>'E_PIPE_READ_FAILED', reason=>$?});
+        || error({code=>'E_PIPE_READ_FAILED', reason=>$!});
 
     my $curif;
     while (<$in>) {
@@ -652,15 +651,15 @@ sub loadifs
         }
 
         if (defined($curif)) {
-            if (/^\slink\/ether\s([^\s]+)\s/) {
+            if (/^\s+link\/ether\s([^\s]+)\s/) {
                 $ifs->{$curif}->{'mac'} = $1;
             }
-            elsif (/^\sinet\s([^\s]+)\s/) {
+            elsif (/^\s+inet\s([^\s]+)\s/) {
                 my ($addr, $mask) = split(/\//, $1);
                 $ifs->{$curif}->{'inet'} = $addr;
                 $ifs->{$curif}->{'inetmask'} = $mask;
             }
-            elsif (/^\sinet6\s([^\s]+)\s/) {
+            elsif (/^\s+inet6\s([^\s]+)\s/) {
                 my ($addr, $mask) = split(/\//, $1);
                 $ifs->{$curif}->{'inet6'} = $addr;
                 $ifs->{$curif}->{'inet6mask'} = $mask;
@@ -687,6 +686,96 @@ sub ifexists
 {
     my $if = shift;
     return defined($interfaces->{$if});
+}
+
+
+##
+# getifnet
+#
+# Get network address for $if
+#
+# $if The interface to get the address from
+#
+sub getifnet
+{
+    my $if = shift;
+    my $info = $interfaces->{$if};
+    return ip2net("$info->{'inet'}/$info->{'inetmask'}");
+}
+
+
+##
+# getifbcast
+#
+# Get broadcast address for $if
+#
+# $if The interface to get the address from
+#
+sub getifbcast
+{
+    my $if = shift;
+    my $info = $interfaces->{$if};
+    return ip2bcast("$info->{'inet'}/$info->{'inetmask'}");
+}
+
+
+##
+# getifaddr
+#
+# Get address for $if
+#
+# $if The interface to get the address from
+#
+sub getifaddr
+{
+    my $if = shift;
+    return $interfaces->{$if}->{'inet'};
+}
+
+
+##
+# getifmask
+#
+# Get netmask for $if
+#
+# $if The interface to get the netmask from
+#
+sub getifmask
+{
+    my $if = shift;
+    return $interfaces->{$if}->{'inetmask'};
+}
+
+
+##
+# if2host
+#
+# Resolve an interface host declaration
+#
+# $host The declaration to resolve
+#
+sub if2host
+{
+    my $host = shift;
+    # is the host value an interface?
+    if ($host =~ /^(lo|(eth|tun|tap|vlan)[0-9]+)/) {
+        # resolve the interface to an address
+        my ($if, $prop) = split(/:/, $host);
+        if (ifexists($if)) {
+            if (defined($prop) && $prop ne '') {
+                if ($prop eq 'network') {
+                    $host = getifnet($if).'/'.getifmask($if);
+                }
+                elsif ($prop eq 'broadcast') {
+                    $host = getifbcast($if);
+                }
+            }
+            else {
+                $host = getifaddr($if);
+            }
+        }
+    }
+    return $host
 }
 
 

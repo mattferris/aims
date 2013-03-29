@@ -13,9 +13,9 @@ use File::Spec;
 use Aims::Main qw(
     newrule getrule skiprule ruleskipped
     setcomment getcomment
-    ifexists protoexists bracelist parenlist
-    tokenpos
-    getoption
+    ifexists getifnet getifbcast getifaddr getifmask if2host
+    protoexists bracelist parenlist
+    tokenpos getoption
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Parser qw(ontoken);
@@ -318,7 +318,7 @@ ontoken('T_CLAUSE_FROM', sub {
         }
     }
     else {
-        my $host = $nextt->{'value'};
+        my $host = if2host($nextt->{'value'});
         push(@{$rule->{'matchexp'}}, "-s $host");
     }
 });
@@ -369,7 +369,7 @@ ontoken('T_CLAUSE_TO', sub {
         }
     }
     else {
-        my $host = $nextt->{'value'};
+        my $host = if2host($nextt->{'value'});
         push(@{$rule->{'matchexp'}}, "-d $host");
     }
 });
