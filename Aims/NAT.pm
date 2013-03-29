@@ -196,7 +196,7 @@ ontoken('T_CLAUSE_NAT_TO', sub {
         }
 
         $rule->{'chain'} = 'POSTROUTING';
-        $rule->{'table'} = 'table';
+        $rule->{'table'} = 'nat';
         $rule->{'target'} = 'SNAT';
         my $peek = $line->[$tpos+1];
 
