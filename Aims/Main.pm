@@ -168,8 +168,10 @@ sub compile
         }
     }
 
-    newrule();
     while (my $line = shift(@$lines)) {
+        next if @$line == 0; # don't loop over empty lines
+
+        newrule();
         $scope->{'line'} = $line;
         dovars($line);
 
@@ -189,18 +191,19 @@ sub compile
         }
 
         parse($grammar, $line);
-    }
 
-    foreach my $r (@$ruleset) {
-        my $target = $r->{'target'};
-        $target = '-j '.$target if $r->{'command'} ne '-P';
-        my $mexp = join(' ', @{$r->{'matchexp'}});
-        my $comment = "-m comment --comment '$r->{'comment'}'";
-        my $texp = join(' ', @{$r->{'targetexp'}});
-        my $cmd = "iptables $r->{'command'} $r->{'chain'}";
-        $cmd .= " -t $r->{'table'}" if $r->{'table'} ne '';
+        next if ruleskipped();
+
+        my $rule = getrule();
+        my $target = $rule->{'target'};
+        $target = '-j '.$target if $rule->{'command'} ne '-P';
+        my $mexp = join(' ', @{$rule->{'matchexp'}});
+        my $cmt = "-m comment --comment '$rule->{'comment'}'";
+        my $texp = join(' ', @{$rule->{'targetexp'}});
+        my $cmd = "iptables $rule->{'command'} $rule->{'chain'}";
+        $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
         $cmd .= " $mexp" if $mexp ne '';
-        $cmd .= " $comment" if $r->{'comment'} ne '';
+        $cmd .= " $cmt" if $rule->{'comment'} ne '';
         $cmd .= " $target";
         $cmd .= " $texp" if $texp ne '';
         push(@$compiled, $cmd);

@@ -9,11 +9,13 @@ use strict;
 use warnings;
 
 use Aims::Main qw(
+    compile
     newrule getrule skiprule ruleskipped getruleset
     setcomment getcomment
     ifexists protoexists bracelist parenlist
     getoption setoption
     addline copyline
+    newscope getscope endscope
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Lexer qw(lex);
@@ -40,12 +42,12 @@ sub newlineeof {
     if ($token->{'char'} == 1) {
         # clear comments
         setcomment('');
+        skiprule();
         return 1;
     }
 
     # if the rule isn't flagged for compilation, ignore it
     if (ruleskipped()) {
-        $rule = newrule();
         return;
     }
 
@@ -68,7 +70,7 @@ sub newlineeof {
             line => $token->{'line'}
         };
     }
-
+$valid = 1;
     if ($valid == 1) {
         if ($rule->{'comment'} eq '') {
             if (getoption('comment.inline') eq 'on' && getcomment() ne '') {
@@ -79,9 +81,6 @@ sub newlineeof {
                 $rule->{'comment'} = "$absfile:$token->{'line'}";
             }
         }
-        my $ruleset = getruleset();
-        push(@$ruleset, $rule);
-        $rule = newrule();
     }
     else {
         error($errargs);
@@ -103,7 +102,7 @@ ontoken('T_ACTION_OPTION', sub {
 
     my $key = $line->[$tpos+1]->{'value'};
     my $val = $line->[$tpos+2]->{'value'};
-    setoption($val);
+    setoption($key, $val);
 });
 
 

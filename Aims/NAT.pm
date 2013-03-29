@@ -113,7 +113,7 @@ ontoken('T_CLAUSE_RDR_TO', sub {
         }
     }
     else {
-        $rule->{'compile'} = 0;
+        skiprule();
 
         my $origline = copyline($line);
         my $newline = copyline($line);
@@ -225,7 +225,7 @@ ontoken('T_CLAUSE_NAT_TO', sub {
         }
     }
     else {
-        $rule->{'compile'} = 0;
+        skiprule();
 
         my $origline = copyline($line);
         my $newline = copyline($line);
