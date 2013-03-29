@@ -291,14 +291,7 @@ ontoken('T_CLAUSE_FROM', sub {
     my $nextt = $line->[$tpos+1];
 
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
-        my $protospec = 0;
-        foreach my $e (@{$rule->{'matchexp'}}) {
-            if ($e =~ /^-p\s[a-z]+$/) {
-                $protospec = 1;
-            }
-        }
-
-        if ($protospec == 0) {
+        if (tokenpos('T_CLAUSE_PROTO', $line) == -1) {
             my $err = {
                 file => $nextt->{'file'},
                 line => $nextt->{'line'},
@@ -349,14 +342,7 @@ ontoken('T_CLAUSE_TO', sub {
     my $nextt = $line->[$tpos+1];
 
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
-        my $protospec = 0;
-        foreach my $e (@{$rule->{'matchexp'}}) {
-            if ($e =~ /^-p\s[a-z]+$/) {
-                $protospec = 1;
-            }
-        }
-
-        if ($protospec == 0) {
+        if (tokenpos('T_CLAUSE_PROTO', $line) == -1) {
             my $err = {
                 file => $nextt->{'file'},
                 line => $nextt->{'line'},
