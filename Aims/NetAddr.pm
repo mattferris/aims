@@ -1,0 +1,91 @@
+#!/usr/bin/perl
+#
+# This module is part of aims, an iptables scripting language.
+#
+#
+package Aims::NetAddr;
+
+use strict;
+use warnings;
+
+use Exporter qw(import);
+our @EXPORT_OK = qw(ip2net ip2bcast ip2int int2ip);
+
+
+##
+# ip2network
+#
+# Return the network address of a given ip/mask
+#
+# $addr The ip/mask to examine
+#
+sub ip2net
+{
+    my $addr = shift;
+    my ($ip, $mask) = split(/\//, $addr);
+    if ($mask eq '') {
+        $mask = '255.255.255.255';
+    }
+    elsif ($mask =~ /^[0-9]+$/) {
+        $mask = 2**32 - (2**(32-$mask));
+    }
+    else {
+        $mask = ip2int($mask);
+    }
+    return int2ip(ip2int($ip) & $mask);
+}
+
+
+##
+# ip2bcast
+#
+# Return the broadcast address of agiven ip/mask
+#
+# $addr The ip/mask to examine
+#
+sub ip2bcast
+{
+    my $addr = shift;
+    my ($ip, $mask) = split(/\//, $addr);
+    if ($mask eq '') {
+        $mask = '255.255.255.255';
+    }
+    elsif ($mask =~ /^[0-9]+$/) {
+        $mask = 2**32 - (2**(32-$mask));
+    }
+    else {
+        $mask = ip2int($mask);
+    }
+    return int2ip((ip2int($ip) & $mask) + (~$mask));
+}
+
+
+##
+# ip2int
+#
+# Convert an dotted-quad ip to an int
+#
+# $ip The ip to convert
+#
+sub ip2int
+{
+    my $ip = shift;
+    return unpack('N', pack('C4', split(/\./, $ip)));
+}
+
+
+##
+# int2ip
+#
+# Convert an int ip to dotted-quad
+#
+# $ip The binary ip to convert
+#
+sub int2ip
+{
+    my $ip = shift;
+    return join('.', unpack('C4', pack('N', $ip)));
+}
+
+
+1;
