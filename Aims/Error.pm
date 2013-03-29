@@ -48,6 +48,9 @@ my $codes = {
     E_UNDEFINED_VARIABLE => '[file]: undefined variable \'[name]\' '.
         'on line [line] at char [char]',
 
+    W_BAD_FILTER_LOGIC => '[file]: bad filter logic, [reason] '.
+        'on line [line] at char [char]',
+
     W_INTERFACE_NOT_FOUND => '[file]: interface \'[value]\' not found '.
             'on line [line] at char [char]',
  

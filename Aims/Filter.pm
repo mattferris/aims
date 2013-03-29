@@ -14,6 +14,8 @@ use Aims::Main qw(
     newrule getrule skiprule ruleskipped
     setcomment getcomment
     ifexists protoexists bracelist parenlist
+    tokenpos
+    getoption
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Parser qw(ontoken);
@@ -84,6 +86,24 @@ ontoken('T_CLAUSE_FOR', sub {
     elsif ($chain eq 'forward') {
         $chain = 'FORWARD';
     }
+    elsif ($line->[0]->{'type'} =~ /^T_ACTION_(ACCEPT|REJECT|DROP)$/) {
+        if ($chain =~ /^(prerouting|postrouting)$/) {
+            my $err = {
+                code => 'E_INVALID_CHAIN',
+                file => $token->{'file'},
+                line => $token->{'line'},
+                got => $1,
+                reason => "can't filter in prerouting or postrouting chains"
+            };
+
+            if (getoption('strict') eq 'on') {
+                error($err);
+            }
+            else {
+                warn($err);
+            }
+        }
+    }
 
     $rule->{'chain'} = $chain;
 });
@@ -118,14 +138,36 @@ ontoken('T_CLAUSE_IN', sub {
         });
     }
 
-    if ($rule->{'chain'} eq 'OUTPUT') {
-        $chain = 'FORWARD';
+    my $forpos = tokenpos('T_CLAUSE_FOR', $line);
+    if ($forpos >= 0) {
+        if ($line->[$forpos+1]->{'value'} eq 'output') {
+            my $err = {
+                code => 'W_BAD_FILTER_LOGIC',
+                file => $ift->{'file'},
+                line => $token->{'line'},
+                char => $token->{'char'},
+                reason => "ingress interface will never match in output chain"
+            };
+
+            if (getoption('strict') eq 'on') {
+                error($err);
+            }
+            else {
+                warn($err);
+            }
+        }
     }
     else {
-        $chain = 'INPUT';
+        if ($rule->{'chain'} eq 'OUTPUT') {
+            $chain = 'FORWARD';
+        }
+        elsif ($rule->{'chain'} eq '') {
+            $chain = 'INPUT';
+        }
+
+        $rule->{'chain'} = $chain;
     }
 
-    $rule->{'chain'} = $chain;
     push(@{$rule->{'matchexp'}}, "-i $if");
 });
 
@@ -159,14 +201,35 @@ ontoken('T_CLAUSE_OUT', sub {
         });
     }
 
-    if ($rule->{'chain'} eq 'INPUT') {
-        $chain = 'FORWARD';
+    my $forpos = tokenpos('T_CLAUSE_FOR', $line);
+    if ($forpos >= 0) {
+        if ($line->[$forpos+1]->{'value'} eq 'input') {
+            my $err = {
+                code => 'W_BAD_FILTER_LOGIC',
+                file => $token->{'file'},
+                line => $token->{'line'},
+                char => $token->{'char'},
+                reason => "egress interface will never match in input chain"
+            };
+
+            if (getoption('strict') eq 'on') {
+                error($err);
+            }
+            else {
+                warn($err);
+            }
+        }
     }
     else {
-        $chain = 'OUTPUT';
+        if ($rule->{'chain'} eq 'INPUT') {
+            $chain = 'FORWARD';
+        }
+        else {
+            $chain = 'OUTPUT';
+        }
+        $rule->{'chain'} = $chain;
     }
 
-    $rule->{'chain'} = $chain;
     push(@{$rule->{'matchexp'}}, "-o $if");
 });
 
