@@ -12,8 +12,7 @@ use Aims::Main qw(
     newrule getrule skiprule ruleskipped
     setcomment getcomment
     ifexists protoexists copyline if2host
-    addline
-    getoption
+    addline getoption tokenpos
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Parser qw(ontoken);
@@ -38,19 +37,10 @@ ontoken('T_CLAUSE_RDR_TO', sub {
             $rule->{'chain'} = 'PREROUTING';
         }
         elsif ($rule->{'chain'} !~ /^OUTPUT|PREROUTING$/) {
-            # see if the chain was set explicity by 'for'
-            my $isfor = 0;
-            foreach my $t (@$line) {
-                if ($t->{'type'} eq 'T_CLAUSE_FOR') {
-                    $isfor = 1;
-                    last;
-                }
-            }
-
             # if the chain was set explicity by 'for', then we need to
             # show an error, otherwise it was set implicity by 'in' or 'out'
             # and it's safe to change without an error
-            if ($isfor == 1) {
+            if (tokenpos('T_CLAUSE_FOR', $line) > -1) {
                 my $err = {
                     code => 'E_INVALID_CHAIN',
                     file => $token->{'file'},
@@ -151,19 +141,10 @@ ontoken('T_CLAUSE_NAT_TO', sub {
 
     if ($line->[0]->{'type'} eq 'T_ACTION_MATCH') {
         if ($rule->{'chain'} ne '' && $rule->{'chain'} ne 'POSTROUTING') {
-            # see if the chain was set explicity by 'for'
-            my $isfor = 0;
-            foreach my $t (@$line) {
-                if ($t->{'type'} eq 'T_CLAUSE_FOR') {
-                    $isfor = 1;
-                    last;
-                }
-            }
-
             # if the chain was set explicity by 'for', then we need to
             # show an error, otherwise it was set implicity by 'in' or 'out'
             # and it's safe to change without an error
-            if ($isfor == 1) {
+            if (tokenpos('T_CLAUSE_FOR', $line) > -1) {
                 my $err = {
                     code => 'E_INVALID_CHAIN',
                     file => $token->{'file'},
