@@ -103,6 +103,25 @@ sub dovars
                 $vt->{'char'} = $t->{'char'};
             }
             splice(@$line, $i, 1, @$varval);
+
+            # if the next token is a string and they are adjacent,
+            # combine them into one string and re-lex them
+            my $nextt = $line->[$i+1];
+            my $adjacent = $t->{'char'}+length($t->{'value'}) == $nextt->{'char'};
+            if (defined($nextt) && $nextt->{'type'} eq 'T_STRING' && $adjacent) {
+                # make a string from the var tokens
+                my $vals = [];
+                foreach my $v (@$varval) {
+                    push(@$vals, $v->{'value'});
+                }
+
+                # lex the string and replace the current and next tokens
+                # with the result
+                my $str = join(' ', @$vals).$nextt->{'value'};
+                my $tokens = lex($grammar, [ $str ]);
+                pop(@$tokens); # pop the EOF token
+                splice(@$line, $i, 2, @$tokens);
+            }
         }
         $i++;
     }
