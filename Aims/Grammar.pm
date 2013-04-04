@@ -185,6 +185,11 @@ $grammar = {
               next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
+              type => 'T_CLAUSE_REJECT_WITH',
+              pattern => '^(reject-with)$',
+              next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+            },
+            {
               type => 'T_CLAUSE_REVERSE',
               pattern => '^(reverse)$',
             },

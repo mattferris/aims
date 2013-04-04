@@ -366,4 +366,22 @@ ontoken('T_CLAUSE_STATE', sub {
 });
 
 
+#
+# Handle 'reject-with' clause
+#
+ontoken('T_CLAUSE_REJECT_WITH', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+    my $rule = getrule();
+
+    my $error = getoption('default-reject-with');
+
+    my $nextt = $line->[$tpos+1];
+    push(@{$rule->{'targetexp'}}, "--reject-with $nextt->{'value'}");
+});
+
+
 1;
