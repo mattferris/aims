@@ -9,7 +9,7 @@ use strict;
 use warnings;
 
 use Exporter qw(import);
-our @EXPORT_OK = qw(ip2net ip2bcast ip2int int2ip);
+our @EXPORT_OK = qw(ip2net ip2bcast ip2int int2ip nethasip);
 
 
 ##
@@ -85,6 +85,32 @@ sub int2ip
 {
     my $ip = shift;
     return join('.', unpack('C4', pack('N', $ip)));
+}
+
+
+##
+# nethasip
+#
+# Check that an ip exists in a subnet
+#
+# $net The subnet
+# $ip The ip
+#
+# Returns 1 if ip is in net, otherwise returns 0
+#
+sub nethasip
+{
+    my $net = shift;
+    my $ip = shift;
+
+    my ($netip, $mask) = split(/\//, $net);
+
+    if (ip2net("$ip/$mask") eq $netip) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
 }
 
 

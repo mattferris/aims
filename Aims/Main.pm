@@ -27,7 +27,7 @@ our @EXPORT_OK = qw(
     getoption setoption
     getvar setvar
     getcomment setcomment
-    ifexists protoexists getifaddr getifnet getifbcast getifmask if2host
+    ifexists protoexists getifaddr getifnet getifbcast getifmask if2host iproute
     bracelist parenlist
     tokenpos protocheck
 );
@@ -49,6 +49,7 @@ delegate(sub {
 
 my $protocols = loadprotos();
 my $interfaces = loadifs();
+my $routes = loadroutes();
 my $compiled = [];
 my $scopes = [];
 
@@ -796,6 +797,54 @@ sub if2host
         }
     }
     return $host
+}
+
+
+##
+# loadroutes
+#
+sub loadroutes
+{
+    my $routes = {};
+
+    open(my $in, 'netstat -rn|')
+        || error({code=>'E_PIPE_READ_FAILED', reason=>$!});
+
+    my $curroute;
+    while (<$in>) {
+        next if /^(Kernel|Destination)/;
+        my ($dst, $gw, $mask, $flags, $mss, $win, $irtt, $if) = split(/\s/);
+        $routes->{"$dst/$mask"} = {gw=>$gw, if=>$if};
+    }
+
+    close($in);
+
+    return $routes;
+}
+
+
+##
+# iproute
+#
+# Get routing information for an ip
+#
+# $ip The ip to lookup
+#
+# Returns a hashref with keys gateway and interface
+#
+sub iproute
+{
+    my $ip = shift;
+
+    my $route;
+    foreach my $r (keys(%$routes)) {
+        if (nethasip($r, $ip)) {
+            $route = $r;
+            last;
+        }
+    }
+
+    return $route;
 }
 
 
