@@ -73,6 +73,7 @@ ontoken('T_CLAUSE_FOR', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
     }
 
     my $chain = $line->[$tpos+1]->{'value'};
@@ -122,6 +123,7 @@ ontoken('T_CLAUSE_IN', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
     }
 
     my $chain;
@@ -185,6 +187,7 @@ ontoken('T_CLAUSE_OUT', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
     }
 
     my $chain;
@@ -247,6 +250,7 @@ ontoken('T_CLAUSE_PROTO', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
     }
 
     my $protot = $line->[$tpos+1];
@@ -286,6 +290,7 @@ ontoken('T_CLAUSE_FROM', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+         return;
     }
 
     my $nextt = $line->[$tpos+1];
@@ -322,6 +327,7 @@ ontoken('T_CLAUSE_TO', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
     }
 
     my $nextt = $line->[$tpos+1];
@@ -358,6 +364,7 @@ ontoken('T_CLAUSE_STATE', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
     }
 
     my $state = uc($line->[$tpos+1]->{'value'});
