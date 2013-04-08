@@ -268,6 +268,14 @@ sub newscope
         # if this is the first scope, define default options
         $scope->{'options'} = $defoptions;
     }
+    else {
+        my $oldscope = getscope();
+
+        # copy variables to new scope
+        foreach my $v (keys(%{$oldscope->{'variables'}})) {
+            $scope->{'variables'}->{$v} = $oldscope->{'variables'}->{$v};
+        }
+    }
 
     push(@$scopes, $scope);
 
