@@ -218,7 +218,7 @@ sub compile
         my $target = $rule->{'target'};
         $target = '-j '.$target if $rule->{'command'} ne '-P';
         my $mexp = join(' ', @{$rule->{'matchexp'}});
-        my $cmt = "-m comment --comment '$rule->{'comment'}'";
+        my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} ne '-P';
         my $texp = join(' ', @{$rule->{'targetexp'}});
         my $cmd = "iptables $rule->{'command'} $rule->{'chain'}";
         $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
