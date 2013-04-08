@@ -28,6 +28,11 @@ $grammar = {
       value => "\n",
     },
     {
+      type => 'T_ARRAY',
+      pattern => '',
+      value => [],
+    },
+    {
       type => 'T_EOF',
       pattern => '',
       value => 'EOF',
@@ -47,7 +52,7 @@ $grammar = {
     {
       type => 'T_OPEN_BRACE',
       pattern => '^(\{)$',
-      next => [ 'T_QUOTED_STRING|T_STRING|T_VARIABLE' ],
+      next => [ 'T_QUOTED_STRING|T_STRING|T_VARIABLE|T_OPEN_BRACE|T_CLOSE_BRACE' ],
       min => 1,
       separator => 'T_COMMA',
       stop => 'T_CLOSE_BRACE',
@@ -132,42 +137,42 @@ $grammar = {
             {
               type => 'T_CLAUSE_FOR',
               pattern => '^(for)$',
-              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_IN',
               pattern => '^(in)$',
-              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_OUT',
               pattern => '^(out)$',
-              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_PROTO',
               pattern => '^(proto)$',
-              next => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_FROM',
               pattern => '^(from)$',
-              next => ['T_OPEN_BRACE|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_TO',
               pattern => '^(to)$',
-              next => ['T_OPEN_BRACE|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_PORT',
               pattern => '^(port)$',
-              next => ['T_OPEN_BRACE|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_STATE',
               pattern => '^(state)$',
-              next => ['T_OPEN_BRACE|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_RDR_TO',

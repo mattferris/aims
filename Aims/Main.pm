@@ -545,13 +545,21 @@ sub bracelist
 
     # start at the next token, which is the first list item
     my $bracelen = 1;
+    my $depth = 1;
     for (my $i=1; $i<@$line; $i++) {
-        if ($line->[$pos+$i]->{'type'} eq 'T_CLOSE_BRACE') {
-            $bracelen++;
-            last;
+        my $t = $line->[$pos+$i];
+        if ($t->{'type'} eq 'T_CLOSE_BRACE') {
+            $depth--;
+            if ($depth == 0) {
+                $bracelen++;
+                last;
+            }
         }
-        if ($line->[$pos+$i]->{'type'} ne 'T_COMMA') {
-            push(@$list, $line->[$pos+$i]);
+        elsif ($t->{'type'} eq 'T_OPEN_BRACE') {
+            $depth++;
+        }
+        elsif ($t->{'type'} ne 'T_COMMA') {
+            push(@$list, $t);
         }
         $bracelen++;
     }
