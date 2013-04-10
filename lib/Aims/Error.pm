@@ -58,6 +58,8 @@ my $codes = {
         'assuming \'all\' on line [line] at char [char]',
 };
 
+my $lastmsg = '';
+
 sub error
 {
     my $args = shift;
@@ -71,7 +73,10 @@ sub warn
 {
     my $args = shift;
     my $msg = mkmsg($args);
-    print STDERR "warning: $msg\n";
+    if ($msg ne $lastmsg) {
+        $lastmsg = $msg;
+        print STDERR "warning: $msg\n";
+    }
 }
 
 
@@ -108,3 +113,6 @@ sub mkmsg
 
     return $msg;
 }
+
+
+1;
