@@ -33,7 +33,7 @@ my $codes = {
     E_PORT_WITHOUT_PROTOCOL => '[file]: port specified without protocol '.
         'on line [line] at char [char]',
 
-    E_REFERENCED_FILE_NOT_FOUND => '[file]: file not found [include]'.
+    E_REFERENCED_FILE_NOT_FOUND => '[file]: file not found [include] '.
         'on line [line]',
 
     E_REFERENCED_FOPEN_FAILED => '[file]: failed to open file '.
