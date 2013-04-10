@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# This module is part of aims, an iptables scripting language.
+# This file is part of aims, an iptables scripting language.
 #
 #
 
@@ -12,9 +12,41 @@ use Aims::Base;
 use Aims::Filter;
 use Aims::NAT;
 
-compile('aims.rules');
-my $out = getcompiled();
+if (!defined($ARGV[0])) {
+    die("usage: aims { check | help | show } [ options ]\n");
+}
 
-foreach my $l (@$out) {
-    print $l."\n";
+my $cmd = $ARGV[0];
+
+if ($cmd eq 'show') {
+    if (@ARGV < 2) {
+        die("usage: aims show file\n");
+    }
+
+    compile($ARGV[1]);
+    my $out = getcompiled();
+
+    foreach my $l (@$out) {
+        print $l."\n";
+    }
+}
+elsif ($cmd eq 'check') {
+    if (@ARGV < 2) {
+        die("usage: aims check file\n");
+    }
+
+    compile($ARGV[1]);
+}
+elsif ($cmd eq 'help') {
+    print "
+aims { help | show } [ options ]
+
+    check   Check the file for errors and/or warnings
+    help    Display this message
+    show    Display the generated iptables commands
+
+";
+}
+else {
+    die("unknown command: $ARGV[0]\n");
 }
