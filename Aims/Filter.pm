@@ -14,7 +14,7 @@ use Aims::Main qw(
     newrule getrule skiprule ruleskipped
     setcomment getcomment
     ifexists getifnet getifbcast getifaddr getifmask if2host
-    protoexists bracelist parenlist
+    protoexists bracelist parenlist arraylist
     tokenpos getoption protocheck
 );
 use Aims::Error qw(error warn debug);
@@ -75,6 +75,10 @@ ontoken('T_CLAUSE_FOR', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
+        return;
+    }
 
     my $chain = $line->[$tpos+1]->{'value'};
 
@@ -123,6 +127,10 @@ ontoken('T_CLAUSE_IN', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
+    }
+    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
         return;
     }
 
@@ -189,6 +197,10 @@ ontoken('T_CLAUSE_OUT', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
+        return;
+    }
 
     my $chain;
     my $ift = $line->[$tpos+1];
@@ -252,6 +264,10 @@ ontoken('T_CLAUSE_PROTO', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
+        return;
+    }
 
     my $protot = $line->[$tpos+1];
     my $proto = $protot->{'value'};
@@ -290,7 +306,11 @@ ontoken('T_CLAUSE_FROM', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
-         return;
+        return;
+    }
+    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
+        return;
     }
 
     my $nextt = $line->[$tpos+1];
@@ -302,6 +322,11 @@ ontoken('T_CLAUSE_FROM', sub {
         my $port = $line->[$tpos+2];
         if ($port->{'type'} eq 'T_OPEN_BRACE') {
             bracelist($tpos+2, $line);
+            return;
+        }
+        if ($port->{'type'} eq 'T_ARRAY') {
+            arraylist($tpos+2, $line);
+            return;
         }
         else {
             push(@{$rule->{'matchexp'}}, "--sport $port->{'value'}");
@@ -329,6 +354,10 @@ ontoken('T_CLAUSE_TO', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
+        return;
+    }
 
     my $nextt = $line->[$tpos+1];
 
@@ -339,6 +368,11 @@ ontoken('T_CLAUSE_TO', sub {
         my $port = $line->[$tpos+2];
         if ($port->{'type'} eq 'T_OPEN_BRACE') {
             bracelist($tpos+2, $line);
+            return;
+        }
+        if ($port->{'type'} eq 'T_ARRAY') {
+            arraylist($tpos+2, $line);
+            return;
         }
         else {
             push(@{$rule->{'matchexp'}}, "--dport $port->{'value'}");
@@ -364,6 +398,10 @@ ontoken('T_CLAUSE_STATE', sub {
 
     if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
+        return;
+    }
+    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
         return;
     }
 
