@@ -120,6 +120,14 @@ ontoken('T_ACTION_INCLUDE', sub {
     my $curfile = $scope->{'file'};
     newscope();
     my $file = $line->[$tpos+1]->{'value'};
+
+    # if $file is a relative path, append current files path
+    if ($file !~ /^\//) {
+        my @tmppath = split(/\//, $curfile);
+        splice(@tmppath, -1, 1, $file);
+        $file = join('/', @tmppath);
+    }
+
     if (!-f $file) {
         error({
             code => 'E_REFERENCED_FILE_NOT_FOUND',
@@ -363,6 +371,16 @@ ontoken('T_CLAUSE_FILE', sub {
     skiprule();
 
     my $filename = $line->[$tpos+1]->{'value'};
+
+    my $scope = getscope();
+    my $curfile = $scope->{'file'};
+
+    # if $filename is a relative path, append current files path
+    if ($filename !~ /^\//) {
+        my @tmppath = split(/\//, $curfile);
+        splice(@tmppath, -1, 1, $filename);
+        $filename = join('/', @tmppath);
+    }
 
     if (!-f $filename) {
         error({
