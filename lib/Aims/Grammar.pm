@@ -33,6 +33,10 @@ $grammar = {
       value => [],
     },
     {
+      type => 'T_BACKSLASH',
+      pattern => '^(\\\)$',
+    },
+    {
       type => 'T_EOF',
       pattern => '',
       value => 'EOF',

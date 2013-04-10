@@ -172,6 +172,15 @@ sub compile
     while (my $line = shift(@$lines)) {
         next if @$line == 0; # don't loop over empty lines
 
+        # if the second last token is a backslash, append the next line
+        # to the current one
+        if ($line->[$#{$line}-1]->{'type'} eq 'T_BACKSLASH') {
+            my $nextline = shift(@$lines);
+            splice(@$line, -2, 2, @$nextline);
+            unshift(@$lines, $line);
+            next;
+        }
+
         newrule();
         $scope->{'line'} = $line;
         dovars($line);
@@ -204,7 +213,7 @@ sub compile
         my $cmd = "iptables $rule->{'command'} $rule->{'chain'}";
         $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
         $cmd .= " $mexp" if $mexp ne '';
-        $cmd .= " $cmt" if $rule->{'comment'} ne '';
+        $cmd .= " $cmt" if $cmt && $cmt ne '';
         $cmd .= " $target";
         $cmd .= " $texp" if $texp ne '';
         push(@$compiled, $cmd);
