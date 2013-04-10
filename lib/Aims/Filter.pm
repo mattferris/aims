@@ -18,7 +18,7 @@ use Aims::Main qw(
     tokenpos getoption protocheck
 );
 use Aims::Error qw(error warn debug);
-use Mexpar::Parser qw(ontoken);
+use Mexpar::Parser qw(ontoken handle);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw();
@@ -314,27 +314,16 @@ ontoken('T_CLAUSE_FROM', sub {
     }
 
     my $nextt = $line->[$tpos+1];
-
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
-        # check if a proto has been specified
-        protocheck($token, $rule);
-
-        my $port = $line->[$tpos+2];
-        if ($port->{'type'} eq 'T_OPEN_BRACE') {
-            bracelist($tpos+2, $line);
-            return;
-        }
-        if ($port->{'type'} eq 'T_ARRAY') {
-            arraylist($tpos+2, $line);
-            return;
-        }
-        else {
-            push(@{$rule->{'matchexp'}}, "--sport $port->{'value'}");
-        }
+        handle('_SPORT', [$line->[$tpos+1], $tpos+1, $line]);
     }
     else {
         my $host = if2host($nextt->{'value'});
-        push(@{$rule->{'matchexp'}}, "-s $host");
+        push(@{$rule->{'matchexp'}}, "-d $host");
+
+        if ($line->[$tpos+2]->{'type'} eq 'T_CLAUSE_PORT') {
+            handle('_SPORT', [$line->[$tpos+2], $tpos+2, $line]);
+        }
     }
 });
 
@@ -360,27 +349,16 @@ ontoken('T_CLAUSE_TO', sub {
     }
 
     my $nextt = $line->[$tpos+1];
-
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
-        # check if a proto has been specified
-        protocheck($token, $rule);
-
-        my $port = $line->[$tpos+2];
-        if ($port->{'type'} eq 'T_OPEN_BRACE') {
-            bracelist($tpos+2, $line);
-            return;
-        }
-        if ($port->{'type'} eq 'T_ARRAY') {
-            arraylist($tpos+2, $line);
-            return;
-        }
-        else {
-            push(@{$rule->{'matchexp'}}, "--dport $port->{'value'}");
-        }
+        handle('_DPORT', [$line->[$tpos+1], $tpos+1, $line]);
     }
     else {
         my $host = if2host($nextt->{'value'});
         push(@{$rule->{'matchexp'}}, "-d $host");
+
+        if ($line->[$tpos+2]->{'type'} eq 'T_CLAUSE_PORT') {
+            handle('_DPORT', [$line->[$tpos+2], $tpos+2, $line]);
+        }
     }
 });
 
@@ -425,6 +403,62 @@ ontoken('T_CLAUSE_REJECT_WITH', sub {
     my $nextt = $line->[$tpos+1];
     my $rejectwith = "--reject-with $nextt->{'value'}";
     push(@{$rule->{'targetexp'}}, $rejectwith);
+});
+
+
+#
+# Handle psuedo token '_SPORT'
+#
+ontoken('_SPORT', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    my $rule = getrule();
+
+    # check if a proto has been specified
+    protocheck($token, $rule);
+
+    my $port = $line->[$tpos+1];
+    if ($port->{'type'} eq 'T_OPEN_BRACE') {
+        bracelist($tpos+1, $line);
+        return;
+    }
+    if ($port->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
+        return;
+    }
+    else {
+        push(@{$rule->{'matchexp'}}, "--sport $port->{'value'}");
+    }
+});
+
+
+#
+# Handle psuedo token '_DPORT'
+#
+ontoken('_DPORT', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    my $rule = getrule();
+
+    # check if a proto has been specified
+    protocheck($token, $rule);
+
+    my $port = $line->[$tpos+1];
+    if ($port->{'type'} eq 'T_OPEN_BRACE') {
+        bracelist($tpos+1, $line);
+        return;
+    }
+    if ($port->{'type'} eq 'T_ARRAY') {
+        arraylist($tpos+1, $line);
+        return;
+    }
+    else {
+        push(@{$rule->{'matchexp'}}, "--dport $port->{'value'}");
+    }
 });
 
 
