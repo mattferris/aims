@@ -202,6 +202,10 @@ $grammar = {
               type => 'T_CLAUSE_LOG',
               pattern => '^(log)$',
             },
+            {
+              type => 'T_CLAUSE_FILE',
+              pattern => '^(file)$',
+            },
           ],
         },
         {

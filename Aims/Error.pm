@@ -25,15 +25,6 @@ my $codes = {
 
     E_FOPEN_FAILED => 'failed to open file [file], [reason]',
 
-    E_INCLUDE_FILE_NOT_FOUND => '[file]: included file not found [include]'.
-        'on line [line]',
-
-    E_INCLUDE_FOPEN_FAILED => '[file]: failed to open included file '.
-        '[include], [reason] on line [line]',
-
-    E_INVALID_CHAIN => '[file]: invalid chain specified \'[got]\', [reason] '.
-        'on line [line]',
-
     E_INVALID_TABLE => '[file]: invalid table specified \'[got]\', [reason] '.
         'on line [line]',
 
@@ -41,6 +32,15 @@ my $codes = {
 
     E_PORT_WITHOUT_PROTOCOL => '[file]: port specified without protocol '.
         'on line [line] at char [char]',
+
+    E_REFERENCED_FILE_NOT_FOUND => '[file]: file not found [include]'.
+        'on line [line]',
+
+    E_REFERENCED_FOPEN_FAILED => '[file]: failed to open file '.
+        '[include], [reason] on line [line]',
+
+    E_INVALID_CHAIN => '[file]: invalid chain specified \'[got]\', [reason] '.
+        'on line [line]',
 
     E_UNDEFINED_PROTOCOL => '[file]: undefined protocol \'[proto]\' specified '.
         'on line [line] at char [char]',

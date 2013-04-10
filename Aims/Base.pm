@@ -11,7 +11,7 @@ use warnings;
 use Aims::Main qw(
     compile
     newrule getrule skiprule ruleskipped getruleset
-    setcomment getcomment
+    setcomment getcomment setvar getvar
     ifexists protoexists bracelist parenlist
     getoption setoption
     addline copyline
@@ -19,7 +19,7 @@ use Aims::Main qw(
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Lexer qw(lex);
-use Mexpar::Parser qw(ontoken);
+use Mexpar::Parser qw(ontoken handle);
 
 use Exporter qw(import);
 our @EXPORT_OK = qw();
@@ -122,7 +122,7 @@ ontoken('T_ACTION_INCLUDE', sub {
     my $file = $line->[$tpos+1]->{'value'};
     if (!-f $file) {
         error({
-            code => 'E_INCLUDE_FILE_NOT_FOUND',
+            code => 'E_REFERENCED_FILE_NOT_FOUND',
             file => $curfile,
             include => $file,
             line => $token->{'line'}
@@ -305,7 +305,30 @@ ontoken('T_CLAUSE_REVERSE', sub {
 # Handle equals '='
 #
 ontoken('T_EQUALS', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
     skiprule();
+
+    my $varname = $line->[0]->{'value'};
+    my $varval = [];
+    if ($line->[2]->{'type'} eq 'T_QUOTED_STRING') {
+        my $t = $line->[2];
+        $t->{'type'} = 'T_STRING';
+        push(@$varval, $t);
+    }
+    elsif ($line->[2]->{'type'} eq 'T_CLAUSE_FILE') {
+        handle('T_CLAUSE_FILE', [$line->[2], 2, $line]);
+        push(@$varval, $line->[2]);
+    }
+    else {
+        for (my $i=2; $i<$#{$line}; $i++) {
+            push(@$varval, $line->[$i]);
+        }
+    }
+
+    setvar($varname, $varval);
 });
 
 
@@ -326,6 +349,54 @@ ontoken('T_COMMENT', sub {
         $cmt =~ s/^\s+|\s+$//;
         setcomment($cmt);
     }
+});
+
+
+#
+# Handle file clauses
+#
+ontoken('T_CLAUSE_FILE', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    skiprule();
+
+    my $filename = $line->[$tpos+1]->{'value'};
+
+    if (!-f $filename) {
+        error({
+            code => 'E_REFERENCED_FILE_NOT_FOUND',
+            file => $token->{'file'},
+            line => $token->{'line'},
+            include => $filename,
+        });
+    }
+
+    open(my $fh, $filename) || error({
+        code => 'E_REFERENCED_FOPEN_FAILED',
+        file => $token->{'file'},
+        line => $token->{'line'},
+        include => $filename,
+        reason => $!,
+    });        
+
+    my $values = [];
+    while (<$fh>) {
+        next if /^#/; # comments
+        next if /^$/; # blank lines
+        chomp;
+        push(@$values, $_);
+    }
+
+    close($fh);
+
+    # change this token
+    $token->{'type'} = 'T_ARRAY';
+    $token->{'value'} = $values;
+
+    # splice out the filename token
+    splice(@$line, $tpos+1, 1);
 });
 
 

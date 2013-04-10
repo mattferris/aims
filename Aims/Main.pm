@@ -28,7 +28,7 @@ our @EXPORT_OK = qw(
     getvar setvar
     getcomment setcomment
     ifexists protoexists getifaddr getifnet getifbcast getifmask if2host iproute
-    bracelist parenlist
+    bracelist parenlist arraylist
     tokenpos protocheck
 );
 
@@ -125,25 +125,6 @@ sub dovars
             }
         }
         $i++;
-    }
-
-    # process any variable declarations
-    my $hastokens = @$line > 1;
-    my $vardef = $hastokens && $line->[0]->{'type'} eq 'T_STRING' && $line->[1]->{'type'} eq 'T_EQUALS';
-    if ($vardef) {
-        my $varname = $line->[0]->{'value'};
-        my $varval = [];
-        if ($line->[2]->{'type'} eq 'T_QUOTED_STRING') {
-             my $t = $line->[2];
-             $t->{'type'} = 'T_STRING';
-             push(@$varval, $t);
-        }
-        else {
-            for (my $i=2; $i<$#{$line}; $i++) {
-                push(@$varval, $line->[$i]);
-            }
-        }
-        $variables->{$varname} = $varval;
     }
 }
 
@@ -587,9 +568,39 @@ sub bracelist
 
 
 ##
+# arraylist
+#
+# Process an array list in $line
+#
+# $pos The position of the array
+# $line The line to process
+#
+sub arraylist
+{
+    my $pos = shift;
+    my $line = shift;
+
+    foreach my $v (reverse(@{$line->[$pos]->{'value'}})) {
+        my $t = {
+            type => 'T_STRING',
+            file => $line->[$pos]->{'file'},
+            line => $line->[$pos]->{'line'},
+            char => $line->[$pos]->{'char'},
+            value => $v
+        };
+        my $newline = copyline($line);
+        splice(@$newline, $pos, 1, $t);
+        addline($newline);
+    }
+
+    skiprule();
+}
+
+
+##
 # parenlist
 #
-# Descrutively process a parenthetical list in $line
+# Destructively process a parenthetical list in $line
 #
 # $pos The position of the opening parenthesis
 # $line The line to process
