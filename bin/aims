@@ -14,7 +14,7 @@ use Aims::Filter;
 use Aims::NAT;
 
 if (!defined($ARGV[0])) {
-    die("usage: aims { check | help | show } [ options ]\n");
+    die("usage: aims { check | help | load | show | unload } [ options ]\n");
 }
 
 my $cmd = $ARGV[0];
@@ -48,6 +48,38 @@ aims { help | show } [ options ]
 
 ";
 }
+elsif ($cmd eq 'unload') {
+    flush();
+    print "flushed rules\n";
+}
+elsif ($cmd eq 'load') {
+    if (@ARGV < 2) {
+        die("usage: aims load file\n");
+    }
+
+    compile($ARGV[1]);
+    my $out = getcompiled();
+
+    foreach my $l (@$out) {
+        #print $l."\n";
+        system($l);
+        if ($? == -1) {
+           flush();
+           print "encountered error processing rule:\n";
+           print "    $l\n";
+           die("flushing rules\n"); 
+        }
+    }
+}
 else {
     die("unknown command: $ARGV[0]\n");
+}
+
+
+sub flush
+{
+    system('iptables -F -t filter');
+    system('iptables -F -t nat');
+    system('iptables -F -t mangle');
+    system('iptables -F -t raw');
 }
