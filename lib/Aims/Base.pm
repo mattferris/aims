@@ -187,7 +187,7 @@ ontoken('T_CLAUSE_LOG', sub {
 
         # process supplied options via parenthesis ()
         my $peek = $line->[$tpos+1];
-        my $logopts = [];
+        my $logopts = {};
         if ($peek->{'type'} eq 'T_OPEN_PARENTHESIS') {
             parenlist($tpos+1, $line);
         }
