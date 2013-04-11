@@ -40,11 +40,13 @@ elsif ($cmd eq 'check') {
 }
 elsif ($cmd eq 'help') {
     print "
-aims { help | show } [ options ]
+aims { check | help | load | show | unload } [ options ]
 
     check   Check the file for errors and/or warnings
     help    Display this message
+    load    Compile and load the ruleset
     show    Display the generated iptables commands
+    unload  Flush all rules
 
 ";
 }
