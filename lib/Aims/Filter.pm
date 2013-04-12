@@ -319,7 +319,7 @@ ontoken('T_CLAUSE_FROM', sub {
     }
     else {
         my $host = if2host($nextt->{'value'});
-        push(@{$rule->{'matchexp'}}, "-d $host");
+        push(@{$rule->{'matchexp'}}, "-s $host");
 
         if ($line->[$tpos+2]->{'type'} eq 'T_CLAUSE_PORT') {
             handle('_SPORT', [$line->[$tpos+2], $tpos+2, $line]);
