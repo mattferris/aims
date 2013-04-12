@@ -186,7 +186,7 @@ $grammar = {
             {
               type => 'T_CLAUSE_NAT_TO',
               pattern => '^(nat-to)$',
-              next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING|T_CLAUSE_PORT'],
             },
             {
               type => 'T_CLAUSE_MASQ_TO',
