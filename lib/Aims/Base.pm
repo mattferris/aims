@@ -235,16 +235,18 @@ ontoken('T_CLAUSE_REVERSE', sub {
     my $newline = [];
     for (my $i=0; $i<@$line; $i++) {
         my $t = $line->[$i];
+        my $newt = {
+            type => $t->{'type'},
+            file => $t->{'file'},
+            line => $t->{'line'},
+            char => $t->{'char'},
+            value => $t->{'value'},
+        };
         if ($t->{'type'} eq 'T_CLAUSE_FOR') {
             push(@$newline, $t);
 
             $i++;
             my $t = $line->[$i];
-            my $newt = {
-                type => $t->{'type'},
-                line => $t->{'line'},
-                char => $t->{'char'}
-            };
 
             if ($t->{'value'} eq 'input') {
                 $newt->{'value'} = 'output';
@@ -259,39 +261,27 @@ ontoken('T_CLAUSE_REVERSE', sub {
             push(@$newline, $newt);
         }
         elsif ($t->{'type'} eq 'T_CLAUSE_IN') {
-            my $newt = {
-                type => 'T_CLAUSE_OUT',
-                line => $t->{'line'},
-                char => $t->{'char'},
-                value => 'out'
-            };
+            $newt->{'type'} = 'T_CLAUSE_OUT';
             push(@$newline, $newt);
         }
         elsif ($t->{'type'} eq 'T_CLAUSE_OUT') {
-            my $newt = {
-                type => 'T_CLAUSE_IN',
-                line => $t->{'line'},
-                char => $t->{'char'},
-                value => 'in'
-            };
+            $newt->{'type'} = 'T_CLAUSE_IN';
             push(@$newline, $newt);
         }
         elsif ($t->{'type'} eq 'T_CLAUSE_TO') {
-            my $newt = {
-                type => 'T_CLAUSE_FROM',
-                line => $t->{'line'},
-                char => $t->{'char'},
-                value => 'from'
-            };
+            $newt->{'type'} = 'T_CLAUSE_FROM';
             push(@$newline, $newt);
         }
         elsif ($t->{'type'} eq 'T_CLAUSE_FROM') {
-            my $newt = {
-                type => 'T_CLAUSE_TO',
-                line => $t->{'line'},
-                char => $t->{'char'},
-                value => 'to'
-            };
+            $newt->{'type'} = 'T_CLAUSE_TO',
+            push(@$newline, $newt);
+        }
+        elsif ($t->{'type'} eq 'T_CLAUSE_NAT_TO') {
+            $newt->{'type'} = 'T_CLAUSE_RDR_TO';
+            push(@$newline, $newt);
+        }
+        elsif ($t->{'type'} eq 'T_CLAUSE_RDR_TO') {
+            $newt->{'type'} = 'T_CLAUSE_NAT_TO';
             push(@$newline, $newt);
         }
         elsif ($t->{'type'} ne 'T_CLAUSE_REVERSE') {
