@@ -1,7 +1,12 @@
 #!/usr/bin/perl
 #
-# This module is part of Mexpar, a lexical analyzer/parser with pluggable
+# This module is part of mexpar, a lexical analyzer/parser with pluggable
 # grammar support.
+# http://bueller.ca/software/mexpar
+#
+# Copyright (c) 2013 Matt Ferris
+# Released under the BSD 2-clause license
+# http://bueller.ca/software/mexpar/license
 #
 package Mexpar::Lexer;
 

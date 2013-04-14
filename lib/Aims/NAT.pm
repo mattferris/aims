@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 #
 # This module is part of aims, an iptables scripting language.
+# http://bueller.ca/software/aims
 #
+# Copyright (c) 2013 Matt Ferris
+# Released under the BSD 2-clause license
+# http://bueller.ca/software/aims/license
 #
 package Aims::NAT;
 
