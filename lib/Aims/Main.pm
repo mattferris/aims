@@ -706,7 +706,8 @@ sub loadifs
 
     my $curif;
     while (<$in>) {
-        if (/^[0-9]+: ([^:]+):/) {
+        if (/^[0-9]+: ([a-z0-9.]+)(:|\@)/) {
+print "found if $1\n";
             $curif = $1;
             $ifs->{$curif} = {};
         }
