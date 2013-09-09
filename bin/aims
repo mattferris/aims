@@ -84,6 +84,9 @@ else {
 
 sub flush
 {
+    system('iptables -P INPUT ACCEPT');
+    system('iptables -P OUTPUT ACCEPT');
+    system('iptables -P FORWARD ACCEPT');
     system('iptables -F -t filter');
     system('iptables -F -t nat');
     system('iptables -F -t mangle');
