@@ -62,7 +62,7 @@ ontoken('T_CLAUSE_RDR_TO', sub {
                 error($err);
             }
             else {
-                $err->{'reason'} .= ', changing chain to POSTROUTING';
+                $err->{'reason'} .= ', changing chain to PREROUTING';
                 warn($err);
             }
         }
