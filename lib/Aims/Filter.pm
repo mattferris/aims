@@ -113,6 +113,10 @@ ontoken('T_CLAUSE_FOR', sub {
             }
         }
     }
+    else {
+        if ($chain eq 'prerouting') { $chain = 'PREROUTING'; }
+        elsif ($chain eq 'postrouting') { $chain = 'POSTROUTING'; }
+    }
 
     $rule->{'chain'} = $chain;
 });
