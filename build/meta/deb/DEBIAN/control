@@ -1,0 +1,12 @@
+Package: aims2
+Version: 2.0b
+Architecture: all
+Depends: iptables, perl
+Description: Advanced IPTables Management Script
+Source: aims
+Section: admin
+Priority: extra
+Maintainer: Matt Ferris <matt@bueller.ca>
+Build-Depends: debhelper (>= 7.0.50~)
+Standards-Version: 3.8.4
+Homepage: <http://bueller.ca/software/aims>

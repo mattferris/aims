@@ -1,0 +1,4 @@
+bin/aims /usr/bin/aims
+etc/aims.rules /etc/aims/aims.rules
+lib/Aims /usr/lib/perl5/
+lib/Mexpar /usr/lib/perl5/
