@@ -103,7 +103,7 @@ $grammar = {
           sub  => [
             {
               type => 'T_ACTION',
-              pattern => '^(accept|drop|reject|policy|nat|option|include|match)$',
+              pattern => '^(accept|drop|reject|policy|option|include|match)$',
               sub  => [
                 {
                   type => 'T_ACTION_ACCEPT',
