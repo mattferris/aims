@@ -91,7 +91,7 @@ $grammar = {
     },
     {
       type => 'T_COMMENT',
-      pattern => '^#+(.*)$',
+      pattern => "^(#.*)\$",
     },
     {
       type => 'T_STRING',

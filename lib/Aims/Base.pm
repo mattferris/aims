@@ -253,16 +253,13 @@ ontoken('T_CLAUSE_REVERSE', sub {
             my $t = $line->[$i];
 
             if ($t->{'value'} eq 'input') {
-                $newt->{'value'} = 'output';
+                $t->{'value'} = 'output';
             }
             elsif ($t->{'value'} eq 'output') {
-                $newt->{'value'} = 'input';
-            }
-            else {
-                $newt->{'value'} = $t->{'value'};
+                $t->{'value'} = 'input';
             }
 
-            push(@$newline, $newt);
+            push(@$newline, $t);
         }
         elsif ($t->{'type'} eq 'T_CLAUSE_IN') {
             $newt->{'type'} = 'T_CLAUSE_OUT';
@@ -348,7 +345,7 @@ ontoken('T_COMMENT', sub {
     }
     else {
         my $cmt = $token->{'value'};
-        $cmt =~ s/^\s+|\s+$//;
+        $cmt =~ s/^#+\s*|^\s+|\s+$//;
         setcomment($cmt);
     }
 });
