@@ -1,4 +1,4 @@
-snappify
+aims2
 
 Copyright (c) 2013, Matt Ferris
 All rights reserved.
