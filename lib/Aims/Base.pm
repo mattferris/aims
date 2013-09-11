@@ -55,6 +55,12 @@ sub newlineeof {
         return;
     }
 
+    # if T_EOF and no other tokens exist in the rule, just return
+    if ($token->{'type'} eq 'T_EOF' && $tpos == 0) {
+        skiprule();
+        return;
+    }
+
     # bad rule, no chain set
     if ($rule->{'chain'} eq '') {
         $valid = 0;

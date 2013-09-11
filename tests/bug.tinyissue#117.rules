@@ -1,0 +1,9 @@
+#
+# Test to reproduce tinyissue#117
+#
+# Blank lines at the end of the file cause an error
+# error: tests/bug.tinyissue#117.rules: no target set in rule on line 9
+#
+accept in lo proto tcp to port 22
+
+
