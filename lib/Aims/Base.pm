@@ -128,7 +128,6 @@ ontoken('T_ACTION_INCLUDE', sub {
 
     my $scope = getscope();
     my $curfile = $scope->{'file'};
-    newscope();
     my $file = $line->[$tpos+1]->{'value'};
 
     # if $file is a relative path, append current files path
@@ -138,7 +137,19 @@ ontoken('T_ACTION_INCLUDE', sub {
         $file = join('/', @tmppath);
     }
 
-    if (!-f $file) {
+    if (-d $file) {
+        # strip trailing slash in directory path
+        $file =~ s/\/$//;
+        opendir(my $dh, $file);
+        my @files = grep {/.+?\.rules$/} readdir($dh);
+        foreach my $f (@files) {
+            newscope();
+            compile("$file/$f");
+            endscope();
+        }
+        closedir($dh);
+    }
+    elsif (!-f $file) {
         error({
             code => 'E_REFERENCED_FILE_NOT_FOUND',
             file => $curfile,
@@ -147,9 +158,10 @@ ontoken('T_ACTION_INCLUDE', sub {
         });
     }
     else {
+        newscope();
         compile($file);
+        endscope();
     }
-    endscope();
 });
 
 
