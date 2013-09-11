@@ -105,7 +105,24 @@ ontoken('T_CLAUSE_RDR_TO', sub {
 
     # ip and perhaps port redirect
     else {
-        my $exp = "--to-destination ".if2host($peek->{'value'});
+        my $host;
+        if ($peek->{'type'} eq 'T_ARRAY') {
+            if (@{$peek->{'value'}} > 1) {
+                my $err = {
+                    code => 'W_TOO_MANY_VALUES',
+                    file => $token->{'file'},
+                    line => $token->{'line'},
+                    char => $token->{'char'}
+                };
+                if (getoption('strict') eq 'on') { error($err); }
+                else { warn($err); }
+            }
+            $host = if2host($peek->{'value'}->[0]);
+        }
+        else {
+            $host = if2host($peek->{'value'});
+        }
+        my $exp = "--to-destination ".$host;
         # are we setting a port as well?
         my $peek2 = $line->[$tpos+2];
         if (defined($peek2) && $peek2->{'type'} eq 'T_CLAUSE_PORT') {
@@ -194,7 +211,24 @@ ontoken('T_CLAUSE_NAT_TO', sub {
 
     # ip and perhaps port redirect
     else {
-        my $exp = "--to-source ".if2host($peek->{'value'});
+        my $host;
+        if ($peek->{'type'} eq 'T_ARRAY') {
+            if (@{$peek->{'value'}} > 1) {
+                my $err = {
+                    code => 'W_TOO_MANY_VALUES',
+                    file => $token->{'file'},
+                    line => $token->{'line'},
+                    char => $token->{'char'}
+                };
+                if (getoption('strict') eq 'on') { error($err); }
+                else { warn($err); }
+            }
+            $host = if2host($peek->{'value'}->[0]);
+        }
+        else {
+            $host = if2host($peek->{'value'});
+        }
+        my $exp = "--to-source ".$host;
         # are we setting a port as well?
         my $peek2 = $line->[$tpos+2];
         if (defined($peek2) && $peek2->{'type'} eq 'T_CLAUSE_PORT') {

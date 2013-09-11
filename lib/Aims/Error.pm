@@ -60,6 +60,9 @@ my $codes = {
  
     W_PORT_WITHOUT_PROTOCOL => '[file]: port specified without protocol, '.
         'assuming \'all\' on line [line] at char [char]',
+
+    W_TOO_MANY_VALUES => '[file]: list value with multiple items given, '.
+        'only using the first item on line [line] at char [char]',
 };
 
 my $lastmsg = '';
