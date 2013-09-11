@@ -22,6 +22,8 @@ deb:
 	mv $(TMPDIR)/_work/docs $(TMPDIR)/usr/share/aims/
 	rm -r $(TMPDIR)/_work
 	cp -r build/meta/deb/* $(TMPDIR)/
+	cat $(TMPDIR)/DEBIAN/control | sed s/\<ver\>/$(RELEASE)/ > $(TMPDIR)/DEBIAN/control.new
+	mv $(TMPDIR)/DEBIAN/control.new $(TMPDIR)/DEBIAN/control
 	( cd $(TMPDIR) && find . ! -path "./DEBIAN/*" ! -name DEBIAN -type f -print0 | xargs -0 md5sum >> DEBIAN/md5sums )
 	dpkg-deb -b $(TMPDIR) aims2_$(RELEASE)_all.deb
 	if [ "$(CLEAN)" = "true" ]; then rm -rf $(TMPDIR); fi
