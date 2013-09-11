@@ -1,0 +1,10 @@
+#
+# Test to reproduce tinyissue#115
+#
+# Logic in the handler for T_CLAUSE_REVERSE causes tokens proceeding
+# T_CLAUSE_FOR to be interpreted as additional T_CLAUSE_FOR's
+#
+option inline-comments on
+
+#### Stuff
+accept for forward in lo proto tcp to port 3389 reverse
