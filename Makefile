@@ -21,6 +21,7 @@ deb:
 	mv $(TMPDIR)/_work/lib/* $(TMPDIR)/usr/lib/perl5/; \
 	mv $(TMPDIR)/_work/docs $(TMPDIR)/usr/share/aims/
 	mv $(TMPDIR)/_work/man $(TMPDIR)/usr/share/
+	find $(TMPDIR)/usr/share -name "*.md" -delete
 	rm -r $(TMPDIR)/_work
 	cp -r build/meta/deb/* $(TMPDIR)/
 	cat $(TMPDIR)/DEBIAN/control | sed s/\<ver\>/$(RELEASE)/ > $(TMPDIR)/DEBIAN/control.new
