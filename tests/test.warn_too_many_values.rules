@@ -1,0 +1,2 @@
+if = file "test.warn_too_many_values.extra"
+accept in $if proto tcp to port 22 rdr-to $if

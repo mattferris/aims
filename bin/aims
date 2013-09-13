@@ -1,16 +1,117 @@
 #!/usr/bin/perl
 #
-# This module is part of aims, an iptables scripting language.
+# This file is part of aims, an iptables scripting language.
+# http://bueller.ca/software/aims
 #
+# Copyright (c) 2013 Matt Ferris
+# Released under the BSD 2-clause license
+# http://bueller.ca/software/aims/license
 #
+use lib 'lib';
 
 use strict;
 use warnings;
 
-use Aims::Core qw(compile);
+use Aims::Main qw(compile getcompiled);
+use Aims::Base;
+use Aims::Filter;
+use Aims::NAT;
 
-my $out = compile('aims.rules');
+if (!defined($ARGV[0])) {
+    die("usage: aims { check | help | load | safe-load | show | unload } [ options ]\n");
+}
 
-foreach my $l (@$out) {
-    print $l."\n";
+my $cmd = $ARGV[0];
+
+if ($cmd eq 'show') {
+    if (@ARGV < 2) {
+        die("usage: aims show file\n");
+    }
+
+    compile($ARGV[1]);
+    my $out = getcompiled();
+
+    foreach my $l (@$out) {
+        print $l."\n";
+    }
+}
+elsif ($cmd eq 'check') {
+    if (@ARGV < 2) {
+        die("usage: aims check file\n");
+    }
+
+    compile($ARGV[1]);
+}
+elsif ($cmd eq 'help') {
+    print "
+aims { check | help | load | safe-load | show | unload } [ options ]
+
+    check      Check the file for errors and/or warnings
+    help       Display this message
+    load       Compile and load the ruleset
+    safe-load  Load the rules, but flush in 5 seconds without user input
+    show       Display the generated iptables commands
+    unload     Flush all rules
+
+";
+}
+elsif ($cmd eq 'unload') {
+    flush();
+    print "flushed rules\n";
+}
+elsif ($cmd eq 'load') {
+    if (@ARGV < 2) {
+        die("usage: aims load file\n");
+    }
+    load($ARGV[1]);
+}
+elsif ($cmd eq 'safe-load') {
+    if (@ARGV< 2) {
+        die("usage: aims safe-load file\n");
+    }
+    load($ARGV[1]);
+    $SIG{'INT'} = \&safeloadcancel;
+    print "rules will automatically be flushed in 5 seconds, press ctrl-c to cancel\n";
+    sleep(5);
+    print "not cancelled, flushing rules\n";
+    flush();
+}
+else {
+    die("unknown command: $ARGV[0]\n");
+}
+
+
+sub flush
+{
+    system('iptables -P INPUT ACCEPT');
+    system('iptables -P OUTPUT ACCEPT');
+    system('iptables -P FORWARD ACCEPT');
+    system('iptables -F -t filter');
+    system('iptables -F -t nat');
+    system('iptables -F -t mangle');
+    system('iptables -F -t raw');
+}
+
+sub load
+{
+    my $file = shift;
+    compile($file);
+    my $out = getcompiled();
+
+    foreach my $l (@$out) {
+        #print $l."\n";
+        system($l);
+        if ($? == -1) {
+           flush();
+           print "encountered error processing rule:\n";
+           print "    $l\n";
+           flush();
+           die("flushing rules\n"); 
+        }
+    }
+}
+
+sub safeloadcancel
+{
+    die("cancelled, rules not flushed\n");
 }

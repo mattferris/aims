@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 #
 # This module is part of aims, an iptables scripting language.
+# http://bueller.ca/software/aims
 #
+# Copyright (c) 2013 Matt Ferris
+# Released under the BSD 2-clause license
+# http://bueller.ca/software/aims/license
 #
 package Aims::Error;
 
@@ -25,15 +29,6 @@ my $codes = {
 
     E_FOPEN_FAILED => 'failed to open file [file], [reason]',
 
-    E_INCLUDE_FILE_NOT_FOUND => '[file]: included file not found [include]'.
-        'on line [line]',
-
-    E_INCLUDE_FOPEN_FAILED => '[file]: failed to open included file '.
-        '[include], [reason] on line [line]',
-
-    E_INVALID_CHAIN => '[file]: invalid chain specified \'[got]\', [reason] '.
-        'on line [line]',
-
     E_INVALID_TABLE => '[file]: invalid table specified \'[got]\', [reason] '.
         'on line [line]',
 
@@ -42,10 +37,22 @@ my $codes = {
     E_PORT_WITHOUT_PROTOCOL => '[file]: port specified without protocol '.
         'on line [line] at char [char]',
 
+    E_REFERENCED_FILE_NOT_FOUND => '[file]: file not found [include] '.
+        'on line [line]',
+
+    E_REFERENCED_FOPEN_FAILED => '[file]: failed to open file '.
+        '[include], [reason] on line [line]',
+
+    E_INVALID_CHAIN => '[file]: invalid chain specified \'[got]\', [reason] '.
+        'on line [line]',
+
     E_UNDEFINED_PROTOCOL => '[file]: undefined protocol \'[proto]\' specified '.
         'on line [line] at char [char]',
 
     E_UNDEFINED_VARIABLE => '[file]: undefined variable \'[name]\' '.
+        'on line [line] at char [char]',
+
+    W_BAD_FILTER_LOGIC => '[file]: bad filter logic, [reason] '.
         'on line [line] at char [char]',
 
     W_INTERFACE_NOT_FOUND => '[file]: interface \'[value]\' not found '.
@@ -53,7 +60,12 @@ my $codes = {
  
     W_PORT_WITHOUT_PROTOCOL => '[file]: port specified without protocol, '.
         'assuming \'all\' on line [line] at char [char]',
+
+    W_TOO_MANY_VALUES => '[file]: list value with multiple items given, '.
+        'only using the first item on line [line] at char [char]',
 };
+
+my $lastmsg = '';
 
 sub error
 {
@@ -68,7 +80,10 @@ sub warn
 {
     my $args = shift;
     my $msg = mkmsg($args);
-    print STDERR "warning: $msg\n";
+    if ($msg ne $lastmsg) {
+        $lastmsg = $msg;
+        print STDERR "warning: $msg\n";
+    }
 }
 
 
@@ -105,3 +120,6 @@ sub mkmsg
 
     return $msg;
 }
+
+
+1;

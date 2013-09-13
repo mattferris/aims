@@ -1,7 +1,12 @@
 #!/usr/bin/perl
 #
-# This module is part of Mexpar, a lexical analyzer/parser with pluggable
+# This module is part of mexpar, a lexical analyzer/parser with pluggable
 # grammer support.
+# http://bueller.ca/software/mexpar
+#
+# Copyright (c) 2013 Matt Ferris
+# Released under the BSD 2-clause license
+# http://bueller.ca/software/mexpar/license
 #
 package Mexpar::Parser;
 
@@ -11,7 +16,7 @@ use warnings;
 use Mexpar::Error qw(error);
 
 use Exporter qw(import);
-our @EXPORT_OK = qw(parse ontoken);
+our @EXPORT_OK = qw(parse ontoken handle);
 
 
 my $handlers = {};
@@ -126,11 +131,12 @@ sub parse
             }
         }
 
-        if (defined($handlers->{$t->{'type'}})) {
-            foreach my $h (@{$handlers->{$t->{'type'}}}) {
-                &$h($t, $i, $tokens);
-            }
-        }
+#        if (defined($handlers->{$t->{'type'}})) {
+#            foreach my $h (@{$handlers->{$t->{'type'}}}) {
+#                &$h($t, $i, $tokens);
+#            }
+#        }
+        handle($t->{'type'}, [$t, $i, $tokens]);
     }
 }
 
@@ -154,6 +160,24 @@ sub ontoken
     }
 
     push(@{$handlers->{$t}}, $h);
+}
+
+
+#
+# Call a handler for a given token.
+#
+# $t The token name
+# $args The arrayref of arguments for the handler
+#
+sub handle
+{
+    my ($t, $args, $rest) = @_;
+
+    if (defined($handlers->{$t})) {
+        foreach my $h (@{$handlers->{$t}}) {
+            &$h(@$args);
+        }
+    }
 }
 
 

@@ -1,0 +1,10 @@
+Package: aims2
+Version: <ver>
+Architecture: all
+Depends: iptables, perl
+Section: admin
+Priority: extra
+Maintainer: Matt Ferris <matt@bueller.ca>
+Homepage: http://bueller.ca/software/aims
+Description: Advanced IPTables Management Script
+ aims is a scripting language which makes the design and management of iptables easier.

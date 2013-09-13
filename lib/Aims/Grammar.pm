@@ -1,7 +1,11 @@
 #!/usr/bin/perl
 #
 # This module is part of aims, an iptables scripting language.
+# http://bueller.ca/software/aims
 #
+# Copyright (c) 2013 Matt Ferris
+# Released under the BSD 2-clause license
+# http://bueller.ca/software/aims/license
 #
 package Aims::Grammar;
 
@@ -28,6 +32,15 @@ $grammar = {
       value => "\n",
     },
     {
+      type => 'T_ARRAY',
+      pattern => '',
+      value => [],
+    },
+    {
+      type => 'T_BACKSLASH',
+      pattern => '^(\\\)$',
+    },
+    {
       type => 'T_EOF',
       pattern => '',
       value => 'EOF',
@@ -47,7 +60,7 @@ $grammar = {
     {
       type => 'T_OPEN_BRACE',
       pattern => '^(\{)$',
-      next => [ 'T_QUOTED_STRING|T_STRING|T_VARIABLE' ],
+      next => [ 'T_QUOTED_STRING|T_STRING|T_VARIABLE|T_OPEN_BRACE|T_CLOSE_BRACE' ],
       min => 1,
       separator => 'T_COMMA',
       stop => 'T_CLOSE_BRACE',
@@ -78,7 +91,7 @@ $grammar = {
     },
     {
       type => 'T_COMMENT',
-      pattern => '^#(.*)$',
+      pattern => "^(#.*)\$",
     },
     {
       type => 'T_STRING',
@@ -90,7 +103,7 @@ $grammar = {
           sub  => [
             {
               type => 'T_ACTION',
-              pattern => '^(accept|drop|reject|policy|nat|option|include|match)$',
+              pattern => '^(accept|drop|reject|policy|option|include|match)$',
               sub  => [
                 {
                   type => 'T_ACTION_ACCEPT',
@@ -132,56 +145,61 @@ $grammar = {
             {
               type => 'T_CLAUSE_FOR',
               pattern => '^(for)$',
-              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_IN',
               pattern => '^(in)$',
-              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_OUT',
               pattern => '^(out)$',
-              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_PROTO',
               pattern => '^(proto)$',
-              next => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_VARIABLE'],
+              next => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_FROM',
               pattern => '^(from)$',
-              next => ['T_OPEN_BRACE|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_TO',
               pattern => '^(to)$',
-              next => ['T_OPEN_BRACE|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_PORT',
               pattern => '^(port)$',
-              next => ['T_OPEN_BRACE|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_STATE',
               pattern => '^(state)$',
-              next => ['T_OPEN_BRACE|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
               type => 'T_CLAUSE_RDR_TO',
               pattern => '^(rdr-to)$',
-              next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING|T_CLAUSE_PORT'],
+              next => ['T_VARIABLE|T_ARRAY|T_STRING|T_QUOTED_STRING|T_CLAUSE_PORT'],
             },
             {
               type => 'T_CLAUSE_NAT_TO',
               pattern => '^(nat-to)$',
-              next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_VARIABLE|T_ARRAY|T_STRING|T_QUOTED_STRING|T_CLAUSE_PORT'],
             },
             {
               type => 'T_CLAUSE_MASQ_TO',
               pattern => '^(masq-to)$',
+              next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+            },
+            {
+              type => 'T_CLAUSE_REJECT_WITH',
+              pattern => '^(reject-with)$',
               next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
             {
@@ -191,6 +209,10 @@ $grammar = {
             {
               type => 'T_CLAUSE_LOG',
               pattern => '^(log)$',
+            },
+            {
+              type => 'T_CLAUSE_FILE',
+              pattern => '^(file)$',
             },
           ],
         },

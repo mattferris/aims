@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# build a debian package
+
+pkgdir=`pwd`
+pkgname=`basename $pkgdir`
+
+if [ -z $1 ]; then
+    echo please specify a release
+    exit 1
+fi
+
+if [ -d /tmp/$pkgname-build ]; then
+    rm -r /tmp/$pkgname-build
+fi
+
+mkdir -p /tmp/$pkgname-build/DEBIAN \
+         /tmp/$pkgname-build/usr/bin \
+         /tmp/$pkgname-build/usr/share/$pkgname \
+         /tmp/$pkgname-build/usr/lib/$pkgname
+
+cp -rp $pkgdir/build/meta/debian/* /tmp/$pkgname-build/DEBIAN/
+
+git archive $1 -o /tmp/$pkgname-build/usr/share/$pkgname/tmp.tar
+
+(
+    cd /tmp/$pkgname-build/usr/share/$pkgname
+    tar xf tmp.tar
+    rm -r tmp.tar build
+    mv ./bin/* /tmp/$pkgname-build/usr/bin
+    mv ./lib/* /tmp/$pkgname-build/usr/lib
+)
+
+(
+    cd /tmp/$pkgname-build
+    for i in `find usr -type f`; do
+        md5sum $i >> /tmp/$pkgname-build/DEBIAN/md5sums
+    done
+)
+
+dpkg-deb -b /tmp/$pkgname-build $pkgname_$1_all.deb
+
+rm -r /tmp/$pkgname-build
