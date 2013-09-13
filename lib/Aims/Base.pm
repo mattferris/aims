@@ -269,15 +269,22 @@ ontoken('T_CLAUSE_REVERSE', sub {
 
             $i++;
             my $t = $line->[$i];
+            $newt = {
+                type => $t->{'type'},
+                file => $t->{'file'},
+                line => $t->{'line'},
+                char => $t->{'char'},
+                value => $t->{'value'},
+            };
 
             if ($t->{'value'} eq 'input') {
-                $t->{'value'} = 'output';
+                $newt->{'value'} = 'output';
             }
             elsif ($t->{'value'} eq 'output') {
-                $t->{'value'} = 'input';
+                $newt->{'value'} = 'input';
             }
 
-            push(@$newline, $t);
+            push(@$newline, $newt);
         }
         elsif ($t->{'type'} eq 'T_CLAUSE_IN') {
             $newt->{'type'} = 'T_CLAUSE_OUT';
