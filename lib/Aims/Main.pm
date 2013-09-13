@@ -712,15 +712,15 @@ sub loadifs
         }
 
         if (defined($curif)) {
-            if (/^\s+link\/ether\s([^\s]+)\s/) {
+            if (!defined($ifs->{$curif}->{'mac'}) && /^\s+link\/ether\s([^\s]+)\s/) {
                 $ifs->{$curif}->{'mac'} = $1;
             }
-            elsif (/^\s+inet\s([^\s]+)\s/) {
+            elsif (!defined($ifs->{$curif}->{'inet'}) && /^\s+inet\s([^\s]+)\s/) {
                 my ($addr, $mask) = split(/\//, $1);
                 $ifs->{$curif}->{'inet'} = $addr;
                 $ifs->{$curif}->{'inetmask'} = $mask;
             }
-            elsif (/^\s+inet6\s([^\s]+)\s/) {
+            elsif (!defined($ifs->{$curif}->{'inet6'}) &&/^\s+inet6\s([^\s]+)\s/) {
                 my ($addr, $mask) = split(/\//, $1);
                 $ifs->{$curif}->{'inet6'} = $addr;
                 $ifs->{$curif}->{'inet6mask'} = $mask;
