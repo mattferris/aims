@@ -98,6 +98,10 @@ $grammar = {
       pattern => '^([^\s,\"\{\}\(\)\=\$]+)$',
       sub  => [
         {
+          type => 'T_ANY',
+          pattern => '^(any)$',
+        },
+        {
           type => 'T_CLAUSE',
           pattern => '^[a-z-]+$',
           sub  => [
@@ -165,12 +169,12 @@ $grammar = {
             {
               type => 'T_CLAUSE_FROM',
               pattern => '^(from)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY'],
             },
             {
               type => 'T_CLAUSE_TO',
               pattern => '^(to)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY'],
             },
             {
               type => 'T_CLAUSE_PORT',

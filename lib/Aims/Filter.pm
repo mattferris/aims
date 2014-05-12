@@ -311,17 +311,20 @@ ontoken('T_CLAUSE_FROM', sub {
 
     if (ruleskipped()) { return; }
     my $rule = getrule();
+    my $nextt = $line->[$tpos+1];
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    if ($nextt->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+    elsif ($nextt->{'type'} eq 'T_ARRAY') {
         arraylist($tpos+1, $line);
         return;
     }
+    elsif ($nextt->{'type'} eq 'T_ANY') {
+        $nextt->{'value'} = '0.0.0.0/0';
+    }
 
-    my $nextt = $line->[$tpos+1];
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
         handle('_SPORT', [$line->[$tpos+1], $tpos+1, $line]);
     }
@@ -346,17 +349,20 @@ ontoken('T_CLAUSE_TO', sub {
 
     if (ruleskipped()) { return; }
     my $rule = getrule();
+    my $nextt = $line->[$tpos+1];
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    if ($nextt->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+    elsif ($nextt->{'type'} eq 'T_ARRAY') {
         arraylist($tpos+1, $line);
         return;
     }
+    elsif ($nextt->{'type'} eq 'T_ANY') {
+        $nextt->{'value'} = '0.0.0.0/0';
+    }
 
-    my $nextt = $line->[$tpos+1];
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
         handle('_DPORT', [$line->[$tpos+1], $tpos+1, $line]);
     }
