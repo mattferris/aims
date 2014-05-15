@@ -145,6 +145,13 @@ ontoken('T_CLAUSE_IN', sub {
     my $chain;
     my $ift = $line->[$tpos+1];
     my $if = $ift->{'value'};
+    my $negated = 0;
+
+    # check for a negated match
+    if ($if =~ /^\!(.+)$/) {
+        $negated = 1;
+        $if = $1;
+    }
 
     if (!ifexists($if)) {
         warn({
@@ -186,7 +193,12 @@ ontoken('T_CLAUSE_IN', sub {
         $rule->{'chain'} = $chain;
     }
 
-    push(@{$rule->{'matchexp'}}, "-i $if");
+    my $expr = "-i $if";
+    if ($negated == 1) {
+        $expr = "'!' $expr";
+    }
+
+    push(@{$rule->{'matchexp'}}, $expr);
 });
 
 
@@ -213,6 +225,13 @@ ontoken('T_CLAUSE_OUT', sub {
     my $chain;
     my $ift = $line->[$tpos+1];
     my $if = $ift->{'value'};
+    my $negated = 0;
+
+    # check for a negated match
+    if ($if =~ /^\!(.+)$/) {
+        $negated = 1;
+        $if = $1;
+    }
 
     if (!ifexists($if)) {
         warn({
@@ -253,7 +272,12 @@ ontoken('T_CLAUSE_OUT', sub {
         $rule->{'chain'} = $chain;
     }
 
-    push(@{$rule->{'matchexp'}}, "-o $if");
+    my $expr = "-o $if";
+    if ($negated == 1) {
+        $expr = "'!' $expr";
+    }
+
+    push(@{$rule->{'matchexp'}}, $expr);
 });
 
 
@@ -279,6 +303,13 @@ ontoken('T_CLAUSE_PROTO', sub {
 
     my $protot = $line->[$tpos+1];
     my $proto = $protot->{'value'};
+    my $negated = 0;
+
+    # check for negated match
+    if ($proto =~ /^\!(.+)$/) {
+        $negated = 1;
+        $proto = $1;
+    }
 
     if (!protoexists($proto)) {
         my $err = {
@@ -297,7 +328,12 @@ ontoken('T_CLAUSE_PROTO', sub {
         }
     }
 
-    push(@{$rule->{'matchexp'}}, "-p $proto");
+    my $expr = "-p $proto";
+    if ($negated == 1) {
+        $expr = "'!' $expr";
+    }
+
+    push(@{$rule->{'matchexp'}}, $expr);
 });
 
 
@@ -330,7 +366,14 @@ ontoken('T_CLAUSE_FROM', sub {
     }
     else {
         my $host = if2host($nextt->{'value'});
-        push(@{$rule->{'matchexp'}}, "-s $host");
+        my $expr = "-s $host";
+
+        # check for a negated match
+        if ($host =~ /^\!(.+)$/) {
+            $expr = "'!' -s $1";
+        }
+
+        push(@{$rule->{'matchexp'}}, $expr);
 
         if ($line->[$tpos+2]->{'type'} eq 'T_CLAUSE_PORT') {
             handle('_SPORT', [$line->[$tpos+2], $tpos+2, $line]);
@@ -368,7 +411,14 @@ ontoken('T_CLAUSE_TO', sub {
     }
     else {
         my $host = if2host($nextt->{'value'});
-        push(@{$rule->{'matchexp'}}, "-d $host");
+        my $expr = "-d $host";
+
+        # check for a negated match
+        if ($host =~ /^\!(.+)$/) {
+            $expr = "'!' -d $1";
+        }
+
+        push(@{$rule->{'matchexp'}}, $expr);
 
         if ($line->[$tpos+2]->{'type'} eq 'T_CLAUSE_PORT') {
             handle('_DPORT', [$line->[$tpos+2], $tpos+2, $line]);
