@@ -46,6 +46,9 @@ my $codes = {
     E_INVALID_CHAIN => '[file]: invalid chain specified \'[got]\', [reason] '.
         'on line [line]',
 
+    E_INVALID_ACTION => '[file]: invalid action specified \'[got]\', [reason] '.
+        'on line [line] at char [char]',
+
     E_UNDEFINED_PROTOCOL => '[file]: undefined protocol \'[proto]\' specified '.
         'on line [line] at char [char]',
 
