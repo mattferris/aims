@@ -4,7 +4,7 @@
 # grammar support.
 # http://bueller.ca/software/mexpar
 #
-# Copyright (c) 2013 Matt Ferris
+# Copyright (c) 2014 Matt Ferris
 # Released under the BSD 2-clause license
 # http://bueller.ca/software/mexpar/license
 #
