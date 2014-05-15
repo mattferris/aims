@@ -3,7 +3,7 @@
 # This module is part of aims, an iptables scripting language.
 # http://bueller.ca/software/aims
 #
-# Copyright (c) 2013 Matt Ferris
+# Copyright (c) 2014 Matt Ferris
 # Released under the BSD 2-clause license
 # http://bueller.ca/software/aims/license
 #
@@ -35,9 +35,16 @@ ontoken('T_CLAUSE_RDR_TO', sub {
 
     if (ruleskipped()) { return; }
 
-    # don't process if a drop or reject rule
-    if ($line->[0]->{'type'} =~ /^drop|reject$/) {
-        return;
+    # produce error if not a match rule
+    if ($line->[0]->{'type'} ne 'T_ACTION_MATCH') {
+        error({
+            code => 'E_INVALID_ACTION',
+            file => $token->{'file'},
+            line => $token->{'line'},
+            char => $token->{'char'},
+            got => $line->[0]->{'value'},
+            reason => 'rdr-to only valid for match rules'
+        });
     }
 
     my $rule = getrule();
@@ -145,9 +152,16 @@ ontoken('T_CLAUSE_NAT_TO', sub {
 
     if (ruleskipped()) { return; }
 
-    # don't process if a drop or reject rule
-    if ($line->[0]->{'type'} =~ /^drop|reject$/) {
-        return;
+    # produce error if not a match rule
+    if ($line->[0]->{'type'} ne 'T_ACTION_MATCH') {
+        error({
+            code => 'E_INVALID_ACTION',
+            file => $token->{'file'},
+            line => $token->{'line'},
+            char => $token->{'char'},
+            got => $line->[0]->{'value'},
+            reason => 'rdr-to only valid for match rules'
+        });
     }
 
     my $rule = getrule();

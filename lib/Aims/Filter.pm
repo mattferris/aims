@@ -3,7 +3,7 @@
 # This module is part of aims, an iptables scripting language.
 # http://bueller.ca/software/aims
 #
-# Copyright (c) 2013 Matt Ferris
+# Copyright (c) 2014 Matt Ferris
 # Released under the BSD 2-clause license
 # http://bueller.ca/software/aims/license
 #
@@ -145,6 +145,13 @@ ontoken('T_CLAUSE_IN', sub {
     my $chain;
     my $ift = $line->[$tpos+1];
     my $if = $ift->{'value'};
+    my $negated = 0;
+
+    # check for a negated match
+    if ($if =~ /^\!(.+)$/) {
+        $negated = 1;
+        $if = $1;
+    }
 
     if (!ifexists($if)) {
         warn({
@@ -186,7 +193,12 @@ ontoken('T_CLAUSE_IN', sub {
         $rule->{'chain'} = $chain;
     }
 
-    push(@{$rule->{'matchexp'}}, "-i $if");
+    my $expr = "-i $if";
+    if ($negated == 1) {
+        $expr = "'!' $expr";
+    }
+
+    push(@{$rule->{'matchexp'}}, $expr);
 });
 
 
@@ -213,6 +225,13 @@ ontoken('T_CLAUSE_OUT', sub {
     my $chain;
     my $ift = $line->[$tpos+1];
     my $if = $ift->{'value'};
+    my $negated = 0;
+
+    # check for a negated match
+    if ($if =~ /^\!(.+)$/) {
+        $negated = 1;
+        $if = $1;
+    }
 
     if (!ifexists($if)) {
         warn({
@@ -253,7 +272,12 @@ ontoken('T_CLAUSE_OUT', sub {
         $rule->{'chain'} = $chain;
     }
 
-    push(@{$rule->{'matchexp'}}, "-o $if");
+    my $expr = "-o $if";
+    if ($negated == 1) {
+        $expr = "'!' $expr";
+    }
+
+    push(@{$rule->{'matchexp'}}, $expr);
 });
 
 
@@ -279,6 +303,13 @@ ontoken('T_CLAUSE_PROTO', sub {
 
     my $protot = $line->[$tpos+1];
     my $proto = $protot->{'value'};
+    my $negated = 0;
+
+    # check for negated match
+    if ($proto =~ /^\!(.+)$/) {
+        $negated = 1;
+        $proto = $1;
+    }
 
     if (!protoexists($proto)) {
         my $err = {
@@ -297,7 +328,12 @@ ontoken('T_CLAUSE_PROTO', sub {
         }
     }
 
-    push(@{$rule->{'matchexp'}}, "-p $proto");
+    my $expr = "-p $proto";
+    if ($negated == 1) {
+        $expr = "'!' $expr";
+    }
+
+    push(@{$rule->{'matchexp'}}, $expr);
 });
 
 
@@ -311,23 +347,33 @@ ontoken('T_CLAUSE_FROM', sub {
 
     if (ruleskipped()) { return; }
     my $rule = getrule();
+    my $nextt = $line->[$tpos+1];
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    if ($nextt->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+    elsif ($nextt->{'type'} eq 'T_ARRAY') {
         arraylist($tpos+1, $line);
         return;
     }
+    elsif ($nextt->{'type'} eq 'T_ANY') {
+        $nextt->{'value'} = '0.0.0.0/0';
+    }
 
-    my $nextt = $line->[$tpos+1];
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
         handle('_SPORT', [$line->[$tpos+1], $tpos+1, $line]);
     }
     else {
         my $host = if2host($nextt->{'value'});
-        push(@{$rule->{'matchexp'}}, "-s $host");
+        my $expr = "-s $host";
+
+        # check for a negated match
+        if ($host =~ /^\!(.+)$/) {
+            $expr = "'!' -s $1";
+        }
+
+        push(@{$rule->{'matchexp'}}, $expr);
 
         if ($line->[$tpos+2]->{'type'} eq 'T_CLAUSE_PORT') {
             handle('_SPORT', [$line->[$tpos+2], $tpos+2, $line]);
@@ -346,23 +392,33 @@ ontoken('T_CLAUSE_TO', sub {
 
     if (ruleskipped()) { return; }
     my $rule = getrule();
+    my $nextt = $line->[$tpos+1];
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    if ($nextt->{'type'} eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
+    elsif ($nextt->{'type'} eq 'T_ARRAY') {
         arraylist($tpos+1, $line);
         return;
     }
+    elsif ($nextt->{'type'} eq 'T_ANY') {
+        $nextt->{'value'} = '0.0.0.0/0';
+    }
 
-    my $nextt = $line->[$tpos+1];
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
         handle('_DPORT', [$line->[$tpos+1], $tpos+1, $line]);
     }
     else {
         my $host = if2host($nextt->{'value'});
-        push(@{$rule->{'matchexp'}}, "-d $host");
+        my $expr = "-d $host";
+
+        # check for a negated match
+        if ($host =~ /^\!(.+)$/) {
+            $expr = "'!' -d $1";
+        }
+
+        push(@{$rule->{'matchexp'}}, $expr);
 
         if ($line->[$tpos+2]->{'type'} eq 'T_CLAUSE_PORT') {
             handle('_DPORT', [$line->[$tpos+2], $tpos+2, $line]);

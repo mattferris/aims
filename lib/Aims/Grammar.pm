@@ -3,7 +3,7 @@
 # This module is part of aims, an iptables scripting language.
 # http://bueller.ca/software/aims
 #
-# Copyright (c) 2013 Matt Ferris
+# Copyright (c) 2014 Matt Ferris
 # Released under the BSD 2-clause license
 # http://bueller.ca/software/aims/license
 #
@@ -98,12 +98,16 @@ $grammar = {
       pattern => '^([^\s,\"\{\}\(\)\=\$]+)$',
       sub  => [
         {
+          type => 'T_ANY',
+          pattern => '^(any)$',
+        },
+        {
           type => 'T_CLAUSE',
           pattern => '^[a-z-]+$',
           sub  => [
             {
               type => 'T_ACTION',
-              pattern => '^(accept|drop|reject|policy|option|include|match)$',
+              pattern => '^(accept|drop|reject|policy|option|include|match|chain)$',
               sub  => [
                 {
                   type => 'T_ACTION_ACCEPT',
@@ -140,12 +144,22 @@ $grammar = {
                   pattern  => '^(match)$',
                   next  => ['T_CLAUSE_FOR|T_CLAUSE_IN|T_CLAUSE_OUT'],
                 },
+                {
+                  type => 'T_ACTION_CHAIN',
+                  pattern  => '^(chain)$',
+                  next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
+                },
               ],
             },
             {
               type => 'T_CLAUSE_FOR',
               pattern => '^(for)$',
               next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
+            },
+            {
+              type => 'T_CLAUSE_TABLE',
+              pattern => '^(table)$',
+              next  => ['T_STRING|T_QUOTED_STRING|T_VARIABLE'],
             },
             {
               type => 'T_CLAUSE_IN',
@@ -165,12 +179,12 @@ $grammar = {
             {
               type => 'T_CLAUSE_FROM',
               pattern => '^(from)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY'],
             },
             {
               type => 'T_CLAUSE_TO',
               pattern => '^(to)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY'],
             },
             {
               type => 'T_CLAUSE_PORT',
@@ -213,6 +227,11 @@ $grammar = {
             {
               type => 'T_CLAUSE_FILE',
               pattern => '^(file)$',
+            },
+            {
+              type => 'T_CLAUSE_SENDTO',
+              pattern => '^(send-to)$',
+              next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
           ],
         },

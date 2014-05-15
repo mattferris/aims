@@ -3,7 +3,7 @@
 # This module is part of aims, an iptables scripting language.
 # http://bueller.ca/software/aims
 #
-# Copyright (c) 2013 Matt Ferris
+# Copyright (c) 2014 Matt Ferris
 # Released under the BSD 2-clause license
 # http://bueller.ca/software/aims/license
 #
@@ -46,10 +46,19 @@ my $codes = {
     E_INVALID_CHAIN => '[file]: invalid chain specified \'[got]\', [reason] '.
         'on line [line]',
 
+    E_INVALID_ACTION => '[file]: invalid action specified \'[got]\', [reason] '.
+        'on line [line] at char [char]',
+
     E_UNDEFINED_PROTOCOL => '[file]: undefined protocol \'[proto]\' specified '.
         'on line [line] at char [char]',
 
     E_UNDEFINED_VARIABLE => '[file]: undefined variable \'[name]\' '.
+        'on line [line] at char [char]',
+
+    E_UNDEFINED_CHAIN => '[file]: undefined chain \'[chain]\' specified '.
+        'on line [line] at char [char]',
+
+    E_CHAIN_ALREADY_DEFINED => '[file]: can\'t redefine chain \'[chain]\' '.
         'on line [line] at char [char]',
 
     W_BAD_FILTER_LOGIC => '[file]: bad filter logic, [reason] '.
