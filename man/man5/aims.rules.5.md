@@ -1,6 +1,6 @@
 % aims.rules(5) aims rule syntax
 % Matt Ferris <matt@bueller.ca>
-% September 9, 2013
+% May 14, 2014
 
 # NAME
 
@@ -108,6 +108,21 @@ Chains are defined explicity using `for` or implicitly using `in` or `out`. If a
 
     # deny all packets in the input chain
     drop for input
+
+You can create custom in addition to the built-in chains using `chain`. You can direct matched packets to custom chains using `send-
+to`.
+
+    # define a custom chain
+    chain foo_chain
+
+    # add a rule to the custom chain
+    accept for foo_chain from $good_ips reverse
+
+    # drop all unmatched traffic in the custom chain
+    drop for foo_chain
+
+    # send packets to the custom chain
+    match in eth0 proto tcp to port 22 send-to foo_chain reverse
 
 Interfaces
 ----------

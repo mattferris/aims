@@ -210,9 +210,9 @@ sub compile
 
         my $rule = getrule();
         my $target = $rule->{'target'};
-        $target = '-j '.$target if $rule->{'command'} ne '-P';
+        $target = '-j '.$target if $rule->{'command'} eq '-A';
         my $mexp = join(' ', @{$rule->{'matchexp'}});
-        my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} ne '-P' && $rule->{'comment'} ne '';
+        my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} eq '-A' && $rule->{'comment'} ne '';
         my $texp = join(' ', @{$rule->{'targetexp'}});
         my $cmd = "iptables $rule->{'command'} $rule->{'chain'}";
         $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
