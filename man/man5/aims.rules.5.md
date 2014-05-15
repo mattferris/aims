@@ -242,20 +242,20 @@ A typical stateful ruleset would look like:
 NETWORK ADDRESS TRANSLATION (NAT)
 =================================
 
-NAT rules modify packet information and can be used in filtering rules (`accept`, `drop`, and `reject`) or can be defined using the non-filtering action `match`. `match` rules don't allow or deny packets and thus, provide a way of performing actions on packets without filtering them.
+NAT rules modify packet information and can be used in filtering rules and can be defined using the non-filtering action `match`. `match` rules don't allow or deny packets and thus, provide a way of performing actions on packets without filtering them.
 
 Redirects/Port forwarding (DNAT)
 --------------------------------
 
 Redirects change the destination address and/or port number of matched packets and are specified with `rdr-to`. As with `from` and `to`, `port` can be used to specify a port number if `proto` has also been specified.
 
-`rdr-to` is only valid for *prerouting* and *output* chains. If no chain is specified using `for`, *prerouting* is assumed. If a rule specifies a chain (using `for`) other than *prerouting* or *output* an error will be issued and aims will exit.
+rdr-to` is only valid for *prerouting* and *output* chains. If no chain is specified using `for`, *prerouting* is assumed. If a rule specifies a chain (using `for`) other than *prerouting* or *output* an error will be issued and aims will exit.
 
     # redirect incoming packets to port 2222 to local port 22
     match in eth0 proto tcp to port 2222 rdr-to port 22
 
     # redirect connections to local port 80 to dmz web server at 10.39.2.11
-    accept in eth0 proto tcp to port 80 rdr-to 10.39.2.11 reverse
+    match in eth0 proto tcp to port 80 rdr-to 10.39.2.11
 
 On systems running a kernel version of 2.6.22 or later, the port value *random* can be specified without an IP address, which randomizes the port mapping used by `rdr-to`.
 
@@ -279,7 +279,7 @@ NAT is traditionally used to modify the source address and/or port number of mat
     match out eth0 nat-to 175.16.74.29
 
     # NAT lan clients and allow traffic in forward chain
-    accept in eth1 out eth0 nat-to 175.16.74.29
+    match in eth1 out eth0 nat-to 175.16.74.29
 
 On systems running a kernel version of 2.6.21 or later, the port value *random* can be specified without an IP address, which randomizes the port mapping used by `nat-to`.
 
