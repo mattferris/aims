@@ -16,6 +16,7 @@ use Aims::Main qw(compile getcompiled);
 use Aims::Base;
 use Aims::Filter;
 use Aims::NAT;
+use Aims::Chain;
 
 if (!defined($ARGV[0])) {
     die("usage: aims { check | help | load | safe-load | show | unload } [ options ]\n");
@@ -90,6 +91,7 @@ sub flush
     system('iptables -F -t nat');
     system('iptables -F -t mangle');
     system('iptables -F -t raw');
+    system('iptables -X');
 }
 
 sub load

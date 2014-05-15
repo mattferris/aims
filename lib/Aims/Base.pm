@@ -72,7 +72,7 @@ sub newlineeof {
     }
 
     # bad rule, no target set
-    if ($rule->{'target'} eq '') {
+    if ($rule->{'command'} eq '-A' && $rule->{'target'} eq '') {
         $valid = 0;
         $errargs = {
             code => 'E_COMPILE_NO_TARGET_SET',

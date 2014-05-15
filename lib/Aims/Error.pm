@@ -52,6 +52,12 @@ my $codes = {
     E_UNDEFINED_VARIABLE => '[file]: undefined variable \'[name]\' '.
         'on line [line] at char [char]',
 
+    E_UNDEFINED_CHAIN => '[file]: undefined chain \'[chain]\' specified '.
+        'on line [line] at char [char]',
+
+    E_CHAIN_ALREADY_DEFINED => '[file]: can\'t redefine chain \'[chain]\' '.
+        'on line [line] at char [char]',
+
     W_BAD_FILTER_LOGIC => '[file]: bad filter logic, [reason] '.
         'on line [line] at char [char]',
 
