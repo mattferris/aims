@@ -91,6 +91,7 @@ sub flush
     system('iptables -F -t nat');
     system('iptables -F -t mangle');
     system('iptables -F -t raw');
+    system('iptables -F -t security');
     system('iptables -X');
 
     system('ip6tables -P INPUT ACCEPT');
@@ -100,6 +101,7 @@ sub flush
     system('ip6tables -F -t nat');
     system('ip6tables -F -t mangle');
     system('ip6tables -F -t raw');
+    system('ip6tables -F -t security');
     system('ip6tables -X');
 }
 
