@@ -360,6 +360,9 @@ ontoken('T_CLAUSE_FROM', sub {
     elsif ($nextt->{'type'} eq 'T_ANY') {
         $nextt->{'value'} = '0.0.0.0/0';
     }
+    elsif ($nextt->{'type'} eq 'T_IPV6') {
+        $rule->{'family'} = 'inet6';
+    }
 
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {
         handle('_SPORT', [$line->[$tpos+1], $tpos+1, $line]);
@@ -404,6 +407,9 @@ ontoken('T_CLAUSE_TO', sub {
     }
     elsif ($nextt->{'type'} eq 'T_ANY') {
         $nextt->{'value'} = '0.0.0.0/0';
+    }
+    elsif ($nextt->{'type'} eq 'T_IPV6') {
+        $rule->{'family'} = 'inet6';
     }
 
     if ($nextt->{'type'} eq 'T_CLAUSE_PORT') {

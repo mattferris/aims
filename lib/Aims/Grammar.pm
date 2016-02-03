@@ -60,7 +60,7 @@ $grammar = {
     {
       type => 'T_OPEN_BRACE',
       pattern => '^(\{)$',
-      next => [ 'T_QUOTED_STRING|T_STRING|T_VARIABLE|T_OPEN_BRACE|T_CLOSE_BRACE' ],
+      next => [ 'T_QUOTED_STRING|T_STRING|T_IPV4|T_IPV6|T_VARIABLE|T_OPEN_BRACE|T_CLOSE_BRACE' ],
       min => 1,
       separator => 'T_COMMA',
       stop => 'T_CLOSE_BRACE',
@@ -92,6 +92,14 @@ $grammar = {
     {
       type => 'T_COMMENT',
       pattern => "^(#.*)\$",
+    },
+    {
+      type => 'T_IPV4',
+      pattern => '^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(\/\d{1,2}|))$'
+    },
+    {
+      type => 'T_IPV6',
+      pattern => '^\[([0-9a-fA-F:]+(\/\d{1,3}|))\]$'
     },
     {
       type => 'T_STRING',
@@ -179,7 +187,7 @@ $grammar = {
             {
               type => 'T_CLAUSE_FROM',
               pattern => '^(from)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_IPV4|T_IPV6|T_QUOTED_STRING|T_ANY'],
             },
             {
               type => 'T_CLAUSE_TO',

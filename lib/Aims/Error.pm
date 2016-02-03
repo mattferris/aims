@@ -61,6 +61,9 @@ my $codes = {
     E_CHAIN_ALREADY_DEFINED => '[file]: can\'t redefine chain \'[chain]\' '.
         'on line [line] at char [char]',
 
+    E_INVALID_PROTOCOL_FAMILY => '[file]: invalid protocol family specified \'[family]\' '.
+        'on line [line] as char [char]',
+
     W_BAD_FILTER_LOGIC => '[file]: bad filter logic, [reason] '.
         'on line [line] at char [char]',
 
