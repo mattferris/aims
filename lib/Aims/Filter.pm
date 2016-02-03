@@ -360,6 +360,9 @@ ontoken('T_CLAUSE_FROM', sub {
     elsif ($nextt->{'type'} eq 'T_ANY') {
         $nextt->{'value'} = '0.0.0.0/0';
     }
+    elsif ($nextt->{'type'} eq 'T_IPV4') {
+        $rule->{'family'} = 'inet';
+    }
     elsif ($nextt->{'type'} eq 'T_IPV6') {
         $rule->{'family'} = 'inet6';
     }
@@ -407,6 +410,9 @@ ontoken('T_CLAUSE_TO', sub {
     }
     elsif ($nextt->{'type'} eq 'T_ANY') {
         $nextt->{'value'} = '0.0.0.0/0';
+    }
+    elsif ($nextt->{'type'} eq 'T_IPV4') {
+        $rule->{'family'} = 'inet';
     }
     elsif ($nextt->{'type'} eq 'T_IPV6') {
         $rule->{'family'} = 'inet6';

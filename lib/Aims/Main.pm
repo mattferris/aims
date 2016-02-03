@@ -215,22 +215,22 @@ sub compile
         my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} eq '-A' && $rule->{'comment'} ne '';
         my $texp = join(' ', @{$rule->{'targetexp'}});
 
-        # determine if we're using iptables or ip6tables
-        my $cmd; 
-        if ($rule->{'family'} eq 'inet') {
-            $cmd = "iptables";
-        } elsif ($rule->{'family'} eq 'inet6') {
-            $cmd = "ip6tables";
-        }
-
-        $cmd .= " $rule->{'command'} $rule->{'chain'}";
+        my $cmd = " $rule->{'command'} $rule->{'chain'}";
 
         $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
         $cmd .= " $mexp" if $mexp ne '';
         $cmd .= " $cmt" if $cmt && $cmt ne '';
         $cmd .= " $target";
         $cmd .= " $texp" if $texp ne '';
-        push(@$compiled, $cmd);
+
+        if ($rule->{'family'} eq 'inet') {
+            push(@$compiled, "iptables".$cmd);
+        } elsif ($rule->{'family'} eq 'inet6') {
+            push(@$compiled, "ip6tables".$cmd);
+        } else {
+            push(@$compiled, "iptables".$cmd);
+            push(@$compiled, "ip6tables".$cmd);
+        }
     }
 
     endscope();
@@ -471,7 +471,7 @@ sub newrule
 {
     my $scope = getscope();
     my $rule = {
-        family => 'inet',
+        family => '',
         compile => 1, # rules like 'option' set this to 0 and are ignored
         command => '-A',
         chain => '',
