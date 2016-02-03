@@ -92,6 +92,15 @@ sub flush
     system('iptables -F -t mangle');
     system('iptables -F -t raw');
     system('iptables -X');
+
+    system('ip6tables -P INPUT ACCEPT');
+    system('ip6tables -P OUTPUT ACCEPT');
+    system('ip6tables -P FORWARD ACCEPT');
+    system('ip6tables -F -t filter');
+    system('ip6tables -F -t nat');
+    system('ip6tables -F -t mangle');
+    system('ip6tables -F -t raw');
+    system('ip6tables -X');
 }
 
 sub load

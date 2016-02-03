@@ -214,7 +214,17 @@ sub compile
         my $mexp = join(' ', @{$rule->{'matchexp'}});
         my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} eq '-A' && $rule->{'comment'} ne '';
         my $texp = join(' ', @{$rule->{'targetexp'}});
-        my $cmd = "iptables $rule->{'command'} $rule->{'chain'}";
+
+        # determine if we're using iptables or ip6tables
+        my $cmd; 
+        if ($rule->{'family'} eq 'inet') {
+            $cmd = "iptables";
+        } elsif ($rule->{'family'} eq 'inet6') {
+            $cmd = "ip6tables";
+        }
+
+        $cmd .= " $rule->{'command'} $rule->{'chain'}";
+
         $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
         $cmd .= " $mexp" if $mexp ne '';
         $cmd .= " $cmt" if $cmt && $cmt ne '';
@@ -461,6 +471,7 @@ sub newrule
 {
     my $scope = getscope();
     my $rule = {
+        family => 'inet',
         compile => 1, # rules like 'option' set this to 0 and are ignored
         command => '-A',
         chain => '',
