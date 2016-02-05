@@ -87,7 +87,7 @@ $grammar = {
     },
     {
       type => 'T_VARIABLE',
-      pattern => '^(\$[a-zA-Z0-9_]+)$',
+      pattern => '^\$([a-zA-Z0-9_]+)$',
     },
     {
       type => 'T_COMMENT',
