@@ -12,6 +12,7 @@ package Aims::Base;
 use strict;
 use warnings;
 
+use Aims::Grammar qw($grammar);
 use Aims::Main qw(
     compile
     newrule getrule skiprule ruleskipped getruleset
@@ -99,6 +100,23 @@ sub newlineeof {
 ontoken('T_NEWLINE', \&newlineeof);
 ontoken('T_EOF', \&newlineeof);
 
+#
+# Handle T_ARRAY
+#
+ontoken('T_ARRAY', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+    skiprule();
+
+    foreach my $t (@{$token->{'value'}}) {
+        my $newline = copyline($line);
+        splice(@$newline, $tpos, 1, $t);
+        addline($newline);
+    }
+});
 
 #
 # Handle 'option' clauses
@@ -326,6 +344,39 @@ ontoken('T_CLAUSE_REVERSE', sub {
 
 
 #
+# Handle variables
+#
+ontoken('T_VARIABLE', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+    skiprule();
+
+    my $scope = getscope();
+    my $variables = $scope->{'variables'};
+
+    my $name = $token->{'value'};
+
+    if (!defined($variables->{$name})) {
+        error({
+            code => 'E_UNDEFINED_VARIABLE',
+            file => $token->{'file'},
+            line => $token->{'line'},
+            char => $token->{'char'},
+            name => $token->{'value'}
+        });
+    }
+
+    my $value = $variables->{$name};
+    my $newline = copyline($line);
+    splice(@$newline, $tpos, 1, @{$value});
+    addline($newline);
+});
+
+
+#
 # Handle equals '='
 #
 ontoken('T_EQUALS', sub {
@@ -420,7 +471,8 @@ ontoken('T_CLAUSE_FILE', sub {
         next if /^#/; # comments
         next if /^$/; # blank lines
         chomp;
-        push(@$values, $_);
+        my $toks = lex($grammar, [$_]);
+        unshift(@$values, $toks->[0]);
     }
 
     close($fh);

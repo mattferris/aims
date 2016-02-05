@@ -75,12 +75,18 @@ ontoken('T_CLAUSE_FOR', sub {
     if (ruleskipped()) { return; }
     my $rule = getrule();
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    my $nexttype = $line->[$tpos+1]->{'type'};
+    if ($nexttype eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+    elsif ($nexttype eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
+    elsif ($nexttype eq 'T_ARRAY') {
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
 
@@ -133,12 +139,18 @@ ontoken('T_CLAUSE_IN', sub {
     if (ruleskipped()) { return; }
     my $rule = getrule();
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    my $nexttype = $line->[$tpos+1]->{'type'};
+    if ($nexttype eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+    elsif ($nexttype eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
+    elsif ($nexttype eq 'T_ARRAY') {
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
 
@@ -213,12 +225,18 @@ ontoken('T_CLAUSE_OUT', sub {
     if (ruleskipped()) { return; }
     my $rule = getrule();
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    my $nexttype = $line->[$tpos+1]->{'type'};
+    if ($nexttype eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+    elsif ($nexttype eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
+    elsif ($nexttype eq 'T_ARRAY') {
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
 
@@ -292,12 +310,18 @@ ontoken('T_CLAUSE_PROTO', sub {
     if (ruleskipped()) { return; }
     my $rule = getrule();
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    my $nexttype = $line->[$tpos+1]->{'type'};
+    if ($nexttype eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+    elsif ($nexttype eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
+    elsif ($nexttype eq 'T_ARRAY') {
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
 
@@ -353,8 +377,13 @@ ontoken('T_CLAUSE_FROM', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    elsif ($nextt->{'type'} eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
     elsif ($nextt->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nextt->{'type'} eq 'T_ANY') {
@@ -404,8 +433,13 @@ ontoken('T_CLAUSE_TO', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    elsif ($nextt->{'type'} eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
     elsif ($nextt->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nextt->{'type'} eq 'T_ANY') {
@@ -450,12 +484,18 @@ ontoken('T_CLAUSE_STATE', sub {
     if (ruleskipped()) { return; }
     my $rule = getrule();
 
-    if ($line->[$tpos+1]->{'type'} eq 'T_OPEN_BRACE') {
+    my $nexttype = $line->[$tpos+1]->{'type'};
+    if ($nexttype eq 'T_OPEN_BRACE') {
         bracelist($tpos+1, $line);
         return;
     }
-    elsif ($line->[$tpos+1]->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+    elsif ($nexttype eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
+    elsif ($nexttype eq 'T_ARRAY') {
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
 
@@ -500,8 +540,13 @@ ontoken('_SPORT', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    if ($port->{'type'} eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
     if ($port->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     else {
@@ -528,8 +573,13 @@ ontoken('_DPORT', sub {
         bracelist($tpos+1, $line);
         return;
     }
+    if ($port->{'type'} eq 'T_VARIABLE') {
+        handle('T_VARIABLE', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
     if ($port->{'type'} eq 'T_ARRAY') {
-        arraylist($tpos+1, $line);
+        #arraylist($tpos+1, $line);
+        handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     else {

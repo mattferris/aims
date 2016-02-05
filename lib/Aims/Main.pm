@@ -187,7 +187,7 @@ sub compile
 
         newrule();
         $scope->{'line'} = $line;
-        dovars($line);
+#        dovars($line);
 
         # check that rule starts with an action or variable string
         my $hastokens = @$line > 1;
