@@ -18,8 +18,7 @@ use Aims::Main qw(
     newrule getrule skiprule ruleskipped
     setcomment getcomment
     ifexists getifnet getifbcast getifaddr getifmask if2host
-    protoexists bracelist parenlist arraylist
-    tokenpos getoption protocheck
+    protoexists tokenpos getoption protocheck
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Parser qw(ontoken handle);
@@ -77,7 +76,7 @@ ontoken('T_CLAUSE_FOR', sub {
 
     my $nexttype = $line->[$tpos+1]->{'type'};
     if ($nexttype eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nexttype eq 'T_VARIABLE') {
@@ -85,7 +84,6 @@ ontoken('T_CLAUSE_FOR', sub {
         return;
     }
     elsif ($nexttype eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
@@ -141,7 +139,7 @@ ontoken('T_CLAUSE_IN', sub {
 
     my $nexttype = $line->[$tpos+1]->{'type'};
     if ($nexttype eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nexttype eq 'T_VARIABLE') {
@@ -149,7 +147,6 @@ ontoken('T_CLAUSE_IN', sub {
         return;
     }
     elsif ($nexttype eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
@@ -227,7 +224,7 @@ ontoken('T_CLAUSE_OUT', sub {
 
     my $nexttype = $line->[$tpos+1]->{'type'};
     if ($nexttype eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nexttype eq 'T_VARIABLE') {
@@ -312,7 +309,7 @@ ontoken('T_CLAUSE_PROTO', sub {
 
     my $nexttype = $line->[$tpos+1]->{'type'};
     if ($nexttype eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nexttype eq 'T_VARIABLE') {
@@ -320,7 +317,6 @@ ontoken('T_CLAUSE_PROTO', sub {
         return;
     }
     elsif ($nexttype eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
@@ -374,7 +370,7 @@ ontoken('T_CLAUSE_FROM', sub {
     my $nextt = $line->[$tpos+1];
 
     if ($nextt->{'type'} eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nextt->{'type'} eq 'T_VARIABLE') {
@@ -382,7 +378,6 @@ ontoken('T_CLAUSE_FROM', sub {
         return;
     }
     elsif ($nextt->{'type'} eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
@@ -430,7 +425,7 @@ ontoken('T_CLAUSE_TO', sub {
     my $nextt = $line->[$tpos+1];
 
     if ($nextt->{'type'} eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nextt->{'type'} eq 'T_VARIABLE') {
@@ -438,7 +433,6 @@ ontoken('T_CLAUSE_TO', sub {
         return;
     }
     elsif ($nextt->{'type'} eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
@@ -486,7 +480,7 @@ ontoken('T_CLAUSE_STATE', sub {
 
     my $nexttype = $line->[$tpos+1]->{'type'};
     if ($nexttype eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     elsif ($nexttype eq 'T_VARIABLE') {
@@ -494,7 +488,6 @@ ontoken('T_CLAUSE_STATE', sub {
         return;
     }
     elsif ($nexttype eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
@@ -537,7 +530,7 @@ ontoken('_SPORT', sub {
 
     my $port = $line->[$tpos+1];
     if ($port->{'type'} eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     if ($port->{'type'} eq 'T_VARIABLE') {
@@ -545,7 +538,6 @@ ontoken('_SPORT', sub {
         return;
     }
     if ($port->{'type'} eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
@@ -570,7 +562,7 @@ ontoken('_DPORT', sub {
 
     my $port = $line->[$tpos+1];
     if ($port->{'type'} eq 'T_OPEN_BRACE') {
-        bracelist($tpos+1, $line);
+        handle('T_OPEN_BRACE', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
     if ($port->{'type'} eq 'T_VARIABLE') {
@@ -578,7 +570,6 @@ ontoken('_DPORT', sub {
         return;
     }
     if ($port->{'type'} eq 'T_ARRAY') {
-        #arraylist($tpos+1, $line);
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }

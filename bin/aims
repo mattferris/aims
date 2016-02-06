@@ -13,6 +13,7 @@ use strict;
 use warnings;
 
 use Aims::Main qw(compile getcompiled);
+use Aims::Primitives;
 use Aims::Base;
 use Aims::Filter;
 use Aims::NAT;

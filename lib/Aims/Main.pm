@@ -32,7 +32,6 @@ our @EXPORT_OK = qw(
     getvar setvar
     getcomment setcomment
     ifexists protoexists getifaddr getifnet getifbcast getifmask if2host iproute
-    bracelist parenlist arraylist
     tokenpos protocheck
 );
 
@@ -70,67 +69,6 @@ my $defoptions = {
     'log-uid' => 'off',
     'strict' => 'off',
 };
-
-
-##
-# dovars
-# 
-# Process variables for the $line
-#
-# $line The line to process
-#
-sub dovars
-{
-    my $line = shift;
-    my $scope = getscope();
-    my $variables = $scope->{'variables'};
-
-    # replace any variables on the line
-    my $i=0;
-    foreach my $t (@$line) {
-        if ($t->{'type'} eq 'T_VARIABLE') {
-            my $varname = substr($t->{'value'}, 1);
-
-            if (!defined($variables->{$varname})) {
-                error({
-                    code => 'E_UNDEFINED_VARIABLE',
-                    file => $t->{'file'},
-                    line => $t->{'line'},
-                    char => $t->{'char'},
-                    name => $t->{'value'}
-                });
-            }
-
-            my $varval = $variables->{$varname};
-            foreach my $vt (@$varval) {
-                $vt->{'file'} = $scope->{'file'};
-                $vt->{'line'} = $t->{'line'};
-                $vt->{'char'} = $t->{'char'};
-            }
-            splice(@$line, $i, 1, @$varval);
-
-            # if the next token is a string and they are adjacent,
-            # combine them into one string and re-lex them
-            my $nextt = $line->[$i+1];
-            my $adjacent = $t->{'char'}+length($t->{'value'}) == $nextt->{'char'};
-            if (defined($nextt) && $nextt->{'type'} eq 'T_STRING' && $adjacent) {
-                # make a string from the var tokens
-                my $vals = [];
-                foreach my $v (@$varval) {
-                    push(@$vals, $v->{'value'});
-                }
-
-                # lex the string and replace the current and next tokens
-                # with the result
-                my $str = join(' ', @$vals).$nextt->{'value'};
-                my $tokens = lex($grammar, [ $str ]);
-                pop(@$tokens); # pop the EOF token
-                splice(@$line, $i, 2, @$tokens);
-            }
-        }
-        $i++;
-    }
-}
 
 
 ##
@@ -187,7 +125,6 @@ sub compile
 
         newrule();
         $scope->{'line'} = $line;
-#        dovars($line);
 
         # check that rule starts with an action or variable string
         my $hastokens = @$line > 1;
@@ -216,7 +153,6 @@ sub compile
         my $texp = join(' ', @{$rule->{'targetexp'}});
 
         my $cmd = " $rule->{'command'} $rule->{'chain'}";
-
         $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
         $cmd .= " $mexp" if $mexp ne '';
         $cmd .= " $cmt" if $cmt && $cmt ne '';
@@ -536,126 +472,6 @@ sub setcomment
     my $comment = shift;
     my $scope = getscope();
     $scope->{'comment'} = $comment;
-}
-
-
-##
-# bracelist
-#
-# Destructively process a brace list in $line
-#
-# $pos The position of the opening brace
-# $line The line to process
-#
-# Returns a list of values
-#
-sub bracelist
-{
-    my $pos = shift;
-    my $line = shift;
-
-    my $list = [];
-
-    # start at the next token, which is the first list item
-    my $bracelen = 1;
-    my $depth = 1;
-    for (my $i=1; $i<@$line; $i++) {
-        my $t = $line->[$pos+$i];
-        if ($t->{'type'} eq 'T_CLOSE_BRACE') {
-            $depth--;
-            if ($depth == 0) {
-                $bracelen++;
-                last;
-            }
-        }
-        elsif ($t->{'type'} eq 'T_OPEN_BRACE') {
-            $depth++;
-        }
-        elsif ($t->{'type'} ne 'T_COMMA') {
-            push(@$list, $t);
-        }
-        $bracelen++;
-    }
-
-    # use reverse to put the new rules in the order the values are in the list
-    foreach my $t (reverse(@$list)) {
-        my $newline = copyline($line);
-        splice(@$newline, $pos, $bracelen, $t);
-        addline($newline);
-    }
-
-    # don't compile the current rule
-    if (@$list > 0) {
-        skiprule();
-    }
-}
-
-
-##
-# arraylist
-#
-# Process an array list in $line
-#
-# $pos The position of the array
-# $line The line to process
-#
-sub arraylist
-{
-    my $pos = shift;
-    my $line = shift;
-
-    foreach my $v (reverse(@{$line->[$pos]->{'value'}})) {
-        my $t = {
-            type => 'T_STRING',
-            file => $line->[$pos]->{'file'},
-            line => $line->[$pos]->{'line'},
-            char => $line->[$pos]->{'char'},
-            value => $v
-        };
-        my $newline = copyline($line);
-        splice(@$newline, $pos, 1, $t);
-        addline($newline);
-    }
-
-    skiprule();
-}
-
-
-##
-# parenlist
-#
-# Destructively process a parenthetical list in $line
-#
-# $pos The position of the opening parenthesis
-# $line The line to process
-#
-# Returns a hash of options
-#
-sub parenlist
-{
-    my $pos = shift;
-    my $line = shift;
-
-    my $opts = {};
-
-    # start at the next token, which is the first option/value pair
-    my $parenlen = 1;
-    for (my $i=1; $i<@$line; $i++) {
-        if ($line->[$pos+$i]->{'type'} eq 'T_CLOSE_PARENTHESIS') {
-            $parenlen++;
-            last;
-        }
-        if ($line->[$pos+$i]->{'type'} ne 'T_COMMA') {
-            my $opt = $line->[$pos+$i]->{'value'};
-            my $val = $line->[$pos+$i+1]->{'value'};
-            $opts->{$opt} = $val;
-            $i++;
-        }
-        $parenlen++;
-    }
-
-    splice(@$line, $pos, $parenlen);
-    $line->[$pos-1]->{'options'} = $opts;
 }
 
 
