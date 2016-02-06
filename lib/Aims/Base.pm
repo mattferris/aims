@@ -314,4 +314,36 @@ ontoken('T_CLAUSE_FILE', sub {
 });
 
 
+#
+# Process the mod token
+#
+ontoken('T_CLAUSE_MOD', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+
+    my $rule = getrule();
+    my $mod = $line->[$tpos+1]->{'value'};
+
+    my $nextt = $line->[$tpos+2];
+    if ($nextt->{'type'} eq 'T_OPEN_PARENTHESIS') {
+        handle('T_OPEN_PARENTHESIS', [$line->[$tpos+2], $tpos+2, $line]);
+    }
+
+    my $modopts = $line->[$tpos+1]->{'options'};
+    my $matchexpr = [];
+    foreach my $k (keys(%$modopts)) {
+        my $expr = "--$k";
+        if ($modopts->{$k} ne 'on') {
+            $expr .= " '$modopts->{$k}'";
+        }
+        push(@$matchexpr, $expr);
+    }
+
+    push(@{$rule->{'matchexp'}}, "-m $mod ".join(" ", @$matchexpr));
+});
+
+
 1;

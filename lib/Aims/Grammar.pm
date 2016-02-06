@@ -241,6 +241,11 @@ $grammar = {
               pattern => '^(send-to)$',
               next => ['T_VARIABLE|T_STRING|T_QUOTED_STRING'],
             },
+            {
+              type => 'T_CLAUSE_MOD',
+              pattern => '^(mod)$',
+              next => ['T_STRING|T_QUOTED_STRING'],
+            },
           ],
         },
         {
