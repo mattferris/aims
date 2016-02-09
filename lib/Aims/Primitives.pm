@@ -231,18 +231,21 @@ ontoken('T_OPEN_BRACE', sub {
         elsif ($t->{'type'} eq 'T_OPEN_BRACE') {
             $depth++;
         }
+        elsif ($t->{'type'} eq 'T_ARRAY') {
+            push(@$list, @{$t->{'value'}});
+        }
         elsif ($t->{'type'} ne 'T_COMMA') {
             push(@$list, $t);
         }
         $bracelen++;
     }
 
-    # use reverse to put the new rules in the order the values are in the list
-    foreach my $t (reverse(@$list)) {
-        my $newline = copyline($line);
-        splice(@$newline, $tpos, $bracelen, $t);
-        addline($newline);
-    }
+    $token->{'type'} = 'T_ARRAY';
+    undef($token->{'next'});
+    $token->{'value'} = $list;
+
+    splice(@$line, $tpos, $bracelen, $token);
+    addline($line);
 
     # don't compile the current rule
     if (@$list > 0) {
