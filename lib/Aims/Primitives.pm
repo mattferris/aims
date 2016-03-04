@@ -287,4 +287,39 @@ ontoken('T_OPEN_PARENTHESIS', sub {
 });
 
 
+#
+# Handle set name tokens <...>
+#
+ontoken('T_SET', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+
+    my $rule = getrule();
+    my $expr = '-m set ';
+    my $setname = $token->{'value'};
+
+    if ($setname =~ /^\!(.+?)$/) {
+        $expr .= '\\! ';
+        $setname = $1;
+    }
+
+    $expr .= '--match-set '.$setname;
+
+    my $ptok = $line->[$tpos-1];
+    my $pptok = $line->[$tpos-2];
+
+    if ($ptok->{'type'} eq 'T_CLAUSE_FROM' || ($ptok->{'type'} eq 'T_CLAUSE_PORT' && $pptok->{'type'} eq 'T_CLAUSE_FROM')) {
+        $expr .= ' src';
+    }
+    elsif ($ptok->{'type'} eq 'T_CLAUSE_TO' || ($ptok->{'type'} eq 'T_CLAUSE_PORT' && $pptok->{'type'} eq 'T_CLAUSE_TO')) {
+        $expr .= ' dst';
+    }
+
+    push(@{$rule->{'matchexp'}}, $expr);
+});
+
+
 1;

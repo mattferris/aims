@@ -381,6 +381,9 @@ ontoken('T_CLAUSE_FROM', sub {
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
         return;
     }
+    elsif ($nextt->{'type'} eq 'T_SET') {
+        return;
+    }
     elsif ($nextt->{'type'} eq 'T_ANY') {
         $nextt->{'value'} = '0.0.0.0/0';
     }
@@ -434,6 +437,9 @@ ontoken('T_CLAUSE_TO', sub {
     }
     elsif ($nextt->{'type'} eq 'T_ARRAY') {
         handle('T_ARRAY', [$line->[$tpos+1], $tpos+1, $line]);
+        return;
+    }
+    elsif ($nextt->{'type'} eq 'T_SET') {
         return;
     }
     elsif ($nextt->{'type'} eq 'T_ANY') {

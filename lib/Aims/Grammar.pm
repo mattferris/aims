@@ -102,6 +102,10 @@ $grammar = {
       pattern => '^\[([0-9a-fA-F:]+(\/\d{1,3}|))\]$'
     },
     {
+      type => 'T_SET',
+      pattern => '^\<(.+?)>$',
+    },
+    {
       type => 'T_STRING',
       pattern => '^([^\s,\"\{\}\(\)\=\$]+)$',
       sub  => [
@@ -157,6 +161,11 @@ $grammar = {
                   pattern  => '^(chain)$',
                   next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
                 },
+                {
+                  type => 'T_ACTION_SET',
+                  pattern => '^(set)$',
+                  next => ['T_SET'],
+                }
               ],
             },
             {
@@ -187,12 +196,12 @@ $grammar = {
             {
               type => 'T_CLAUSE_FROM',
               pattern => '^(from)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_IPV4|T_IPV6|T_QUOTED_STRING|T_ANY'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_IPV4|T_IPV6|T_QUOTED_STRING|T_ANY|T_SET'],
             },
             {
               type => 'T_CLAUSE_TO',
               pattern => '^(to)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY|T_SET'],
             },
             {
               type => 'T_CLAUSE_PORT',
