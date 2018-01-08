@@ -74,6 +74,7 @@ my $defoptions = {
     'set-timeout' => '',
     'set-flags' => '',
     'strict' => 'off',
+    'ipv6' => 'on'
 };
 
 
@@ -183,7 +184,9 @@ sub compile
                 push(@$compiled, "ip6tables".$cmd);
             } else {
                 push(@$compiled, "iptables".$cmd);
-                push(@$compiled, "ip6tables".$cmd);
+                if (getoption('ipv6') eq 'on') {
+                    push(@$compiled, "ip6tables".$cmd);
+                }
             }
         }
     }
