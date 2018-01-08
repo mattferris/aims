@@ -1,7 +1,7 @@
 Package: aims2
 Version: <ver>
 Architecture: all
-Depends: iptables, perl
+Depends: iptables, ipset, perl
 Section: admin
 Priority: extra
 Maintainer: Matt Ferris <matt@bueller.ca>

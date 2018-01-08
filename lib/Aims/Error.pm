@@ -62,7 +62,10 @@ my $codes = {
         'on line [line] at char [char]',
 
     E_INVALID_PROTOCOL_FAMILY => '[file]: invalid protocol family specified \'[family]\' '.
-        'on line [line] as char [char]',
+        'on line [line] at char [char]',
+
+    E_INVALID_OPTION_VALUE => '[file]: invalid value \'[value]\' for option \'[option]\', expected [expected] '.
+        'on line [line]',
 
     W_BAD_FILTER_LOGIC => '[file]: bad filter logic, [reason] '.
         'on line [line] at char [char]',

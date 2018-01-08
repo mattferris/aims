@@ -119,7 +119,7 @@ $grammar = {
           sub  => [
             {
               type => 'T_ACTION',
-              pattern => '^(accept|drop|reject|policy|option|include|match|chain)$',
+              pattern => '^(accept|drop|reject|policy|option|include|match|chain|set)$',
               sub  => [
                 {
                   type => 'T_ACTION_ACCEPT',
@@ -164,7 +164,7 @@ $grammar = {
                 {
                   type => 'T_ACTION_SET',
                   pattern => '^(set)$',
-                  next => ['T_SET'],
+                  next => ['T_SET', 'T_OPEN_PARENTHESIS|T_CLAUSE_ADD|T_CLAUSE_PERSIST']
                 }
               ],
             },
@@ -254,6 +254,25 @@ $grammar = {
               type => 'T_CLAUSE_MOD',
               pattern => '^(mod)$',
               next => ['T_STRING|T_QUOTED_STRING'],
+            },
+            {
+              type => 'T_CLAUSE_ADD',
+              pattern => '^(add)$',
+              next => ['T_IPV4|T_IPV6|T_ARRAY|T_VARIABLE|T_OPEN_BRACE'],
+            },
+            {
+              type => 'T_CLAUSE_PERSIST',
+              pattern => '^(persist)$',
+            },
+            {
+              type => 'T_CLAUSE_ADD_TO',
+              pattern => '^(add-to)$',
+              next => ['T_SET', 'T_OPEN_PARENTHESIS'],
+            },
+            {
+              type => 'T_CLAUSE_DEL_FROM',
+              pattern => '^(del-from)$',
+              next => ['T_SET', 'T_OPEN_PARENTHESIS'],
             },
           ],
         },

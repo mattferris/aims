@@ -21,6 +21,7 @@ use Aims::Main qw(
     getoption setoption
     addline copyline
     newscope getscope endscope
+    setipset
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Lexer qw(lex);
@@ -62,24 +63,26 @@ sub newlineeof {
         return;
     }
 
-    # bad rule, no chain set
-    if ($rule->{'chain'} eq '') {
-        $valid = 0;
-        $errargs = {
-            code => 'E_COMPILE_NO_CHAIN_SET',
-            file => $token->{'file'},
-            line => $token->{'line'}
-        };
-    }
+    if ($rule->{'class'} eq 'iptables') {
+        # bad rule, no chain set
+        if ($rule->{'chain'} eq '') {
+            $valid = 0;
+            $errargs = {
+                code => 'E_COMPILE_NO_CHAIN_SET',
+                file => $token->{'file'},
+                line => $token->{'line'}
+            };
+        }
 
-    # bad rule, no target set
-    if ($rule->{'command'} eq '-A' && $rule->{'target'} eq '') {
-        $valid = 0;
-        $errargs = {
-            code => 'E_COMPILE_NO_TARGET_SET',
-            file => $token->{'file'},
-            line => $token->{'line'}
-        };
+        # bad rule, no target set
+        if ($rule->{'command'} eq '-A' && $rule->{'target'} eq '') {
+            $valid = 0;
+            $errargs = {
+                code => 'E_COMPILE_NO_TARGET_SET',
+                file => $token->{'file'},
+                line => $token->{'line'}
+            };
+        }
     }
 
     if ($valid == 1) {
@@ -298,27 +301,111 @@ ontoken('T_SET', sub {
     if (ruleskipped()) { return; }
 
     my $rule = getrule();
-    my $expr = '-m set ';
     my $setname = $token->{'value'};
+    my $expr;
 
-    if ($setname =~ /^\!(.+?)$/) {
-        $expr .= '\\! ';
-        $setname = $1;
+    if ($rule->{'class'} eq 'ipset') {
+
+        my $command = 'add';
+
+        push(@{$rule->{'matchexp'}}, $setname);
+
+        if (!defined($token->{'created'})) {
+            system('ipset -q list '.$setname.' 2>/dev/null 1>/dev/null');
+            my $exitcode = $? >> 8;
+            if ($exitcode != 0) { 
+                $rule->{'command'} = 'create';
+                $command = 'create';
+                $token->{'created'} = 1;
+            }
+            push(@{$rule->{'matchexp'}}, 'hash:ip');
+        }
+
+        my $logopts = {};
+
+        my $nextt = $line->[$tpos+1];
+        if ($nextt->{'type'} eq 'T_OPEN_PARENTHESIS') {
+            handle('T_OPEN_PARENTHESIS', [$nextt, $tpos+1, $line]);
+
+            if (defined($token->{'options'})) {
+                $logopts = $token->{'options'};
+            }
+        }
+
+        my $opts = {};
+        my $keys = ['family', 'counters', 'timeout'];
+        foreach my $k (@$keys) {
+            $opts->{$k} = getoption("set-$k");
+        }
+
+        foreach my $k (keys(%$logopts)) {
+            $opts->{$k} = $logopts->{$k};
+        }
+
+        $nextt = $line->[$tpos+1];
+
+        my $expr = "";
+        if ($command eq 'create' && $nextt->{'type'} ne 'T_CLAUSE_ADD' && $opts->{'family'} ne '') {
+            if ($opts->{'family'} !~ /^(inet|inet6)$/) {
+                error({
+                    code => 'E_INVALID_OPTION_VALUE',
+                    file => $token->{'file'},
+                    line => $token->{'line'},
+                    opt => 'family',
+                    value => $opts->{'family'},
+                    expected => "'inet' or 'inet6'"
+                });
+            }
+            push(@{$rule->{'matchexp'}}, "family $opts->{'family'}");
+        }
+        if ($command eq 'create' && $nextt->{'type'} ne 'T_CLAUSE_ADD' && $opts->{'counters'} eq 'on') {
+            push(@{$rule->{'matchexp'}}, 'counters');
+        }
+        if ($opts->{'timeout'} ne '') {
+            if ($opts->{'timeout'} !~ /^[0-9]+$/) {
+                error({
+                    code => 'E_INVALID_OPTION_VALUE',
+                    file => $token->{'file'},
+                    line => $token->{'line'},
+                    opt => 'timeout',
+                    value => $opts->{'timeout'},
+                    expected => "integer"
+                });
+            }
+            push(@{$rule->{'matchexp'}}, "timeout $opts->{'timeout'}");
+        }
+
+        if ($command eq 'create') {
+            setipset($setname, $opts);
+            if ($nextt->{'type'} eq 'T_CLAUSE_ADD') {
+                addline(copyline($line));
+                splice(@$line, $tpos);
+            }
+        }
+    }
+    else {
+        $expr = '-m set ';
+
+        if ($setname =~ /^\!(.+?)$/) {
+            $expr .= '\\! ';
+            $setname = $1;
+        }
+
+        $expr .= '--match-set '.$setname;
+
+        my $ptok = $line->[$tpos-1];
+        my $pptok = $line->[$tpos-2];
+
+        if ($ptok->{'type'} eq 'T_CLAUSE_FROM' || ($ptok->{'type'} eq 'T_CLAUSE_PORT' && $pptok->{'type'} eq 'T_CLAUSE_FROM')) {
+            $expr .= ' src';
+        }
+        elsif ($ptok->{'type'} eq 'T_CLAUSE_TO' || ($ptok->{'type'} eq 'T_CLAUSE_PORT' && $pptok->{'type'} eq 'T_CLAUSE_TO')) {
+            $expr .= ' dst';
+        }
+
+        push(@{$rule->{'matchexp'}}, $expr);
     }
 
-    $expr .= '--match-set '.$setname;
-
-    my $ptok = $line->[$tpos-1];
-    my $pptok = $line->[$tpos-2];
-
-    if ($ptok->{'type'} eq 'T_CLAUSE_FROM' || ($ptok->{'type'} eq 'T_CLAUSE_PORT' && $pptok->{'type'} eq 'T_CLAUSE_FROM')) {
-        $expr .= ' src';
-    }
-    elsif ($ptok->{'type'} eq 'T_CLAUSE_TO' || ($ptok->{'type'} eq 'T_CLAUSE_PORT' && $pptok->{'type'} eq 'T_CLAUSE_TO')) {
-        $expr .= ' dst';
-    }
-
-    push(@{$rule->{'matchexp'}}, $expr);
 });
 
 
