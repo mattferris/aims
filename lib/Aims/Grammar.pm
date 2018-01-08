@@ -102,6 +102,10 @@ $grammar = {
       pattern => '^\[([0-9a-fA-F:]+(\/\d{1,3}|))\]$'
     },
     {
+      type => 'T_SET',
+      pattern => '^\<(.+?)>$',
+    },
+    {
       type => 'T_STRING',
       pattern => '^([^\s,\"\{\}\(\)\=\$]+)$',
       sub  => [
@@ -115,7 +119,7 @@ $grammar = {
           sub  => [
             {
               type => 'T_ACTION',
-              pattern => '^(accept|drop|reject|policy|option|include|match|chain)$',
+              pattern => '^(accept|drop|reject|policy|option|include|match|chain|set)$',
               sub  => [
                 {
                   type => 'T_ACTION_ACCEPT',
@@ -157,6 +161,11 @@ $grammar = {
                   pattern  => '^(chain)$',
                   next  => ['T_STRING|T_QUOTED_STRING|T_OPEN_BRACE|T_ARRAY|T_VARIABLE'],
                 },
+                {
+                  type => 'T_ACTION_SET',
+                  pattern => '^(set)$',
+                  next => ['T_SET', 'T_OPEN_PARENTHESIS|T_CLAUSE_ADD|T_CLAUSE_PERSIST']
+                }
               ],
             },
             {
@@ -187,12 +196,12 @@ $grammar = {
             {
               type => 'T_CLAUSE_FROM',
               pattern => '^(from)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_IPV4|T_IPV6|T_QUOTED_STRING|T_ANY'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_IPV4|T_IPV6|T_QUOTED_STRING|T_ANY|T_SET'],
             },
             {
               type => 'T_CLAUSE_TO',
               pattern => '^(to)$',
-              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY'],
+              next => ['T_OPEN_BRACE|T_ARRAY|T_CLAUSE_PORT|T_VARIABLE|T_STRING|T_QUOTED_STRING|T_ANY|T_SET'],
             },
             {
               type => 'T_CLAUSE_PORT',
@@ -245,6 +254,25 @@ $grammar = {
               type => 'T_CLAUSE_MOD',
               pattern => '^(mod)$',
               next => ['T_STRING|T_QUOTED_STRING'],
+            },
+            {
+              type => 'T_CLAUSE_ADD',
+              pattern => '^(add)$',
+              next => ['T_IPV4|T_IPV6|T_ARRAY|T_VARIABLE|T_OPEN_BRACE'],
+            },
+            {
+              type => 'T_CLAUSE_PERSIST',
+              pattern => '^(persist)$',
+            },
+            {
+              type => 'T_CLAUSE_ADD_TO',
+              pattern => '^(add-to)$',
+              next => ['T_SET', 'T_OPEN_PARENTHESIS'],
+            },
+            {
+              type => 'T_CLAUSE_DEL_FROM',
+              pattern => '^(del-from)$',
+              next => ['T_SET', 'T_OPEN_PARENTHESIS'],
             },
           ],
         },

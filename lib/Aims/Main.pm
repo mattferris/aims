@@ -33,6 +33,7 @@ our @EXPORT_OK = qw(
     getcomment setcomment
     ifexists protoexists getifaddr getifnet getifbcast getifmask if2host iproute
     tokenpos protocheck
+    setipset getipset
 );
 
 
@@ -55,6 +56,7 @@ my $interfaces = loadifs();
 my $routes = loadroutes();
 my $compiled = [];
 my $scopes = [];
+my $sets = {};
 
 
 # default options
@@ -67,6 +69,10 @@ my $defoptions = {
     'log-tcp-sequence' => 'off',
     'log-tcp-options' => 'off',
     'log-uid' => 'off',
+    'set-counters' => 'off',
+    'set-family' => 'inet',
+    'set-timeout' => '',
+    'set-flags' => '',
     'strict' => 'off',
 };
 
@@ -146,26 +152,39 @@ sub compile
         next if ruleskipped();
 
         my $rule = getrule();
-        my $target = $rule->{'target'};
-        $target = '-j '.$target if $rule->{'command'} eq '-A';
-        my $mexp = join(' ', @{$rule->{'matchexp'}});
-        my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} eq '-A' && $rule->{'comment'} ne '';
-        my $texp = join(' ', @{$rule->{'targetexp'}});
 
-        my $cmd = " $rule->{'command'} $rule->{'chain'}";
-        $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
-        $cmd .= " $mexp" if $mexp ne '';
-        $cmd .= " $cmt" if $cmt && $cmt ne '';
-        $cmd .= " $target";
-        $cmd .= " $texp" if $texp ne '';
+        if ($rule->{'class'} eq 'ipset') {
+            my $cmd = $rule->{'command'};
+            $cmd .= " ".join(' ', @{$rule->{'matchexp'}});
 
-        if ($rule->{'family'} eq 'inet') {
-            push(@$compiled, "iptables".$cmd);
-        } elsif ($rule->{'family'} eq 'inet6') {
-            push(@$compiled, "ip6tables".$cmd);
-        } else {
-            push(@$compiled, "iptables".$cmd);
-            push(@$compiled, "ip6tables".$cmd);
+            if (defined($rule->{'comment'}) && $rule->{'comment'} ne '') {
+                $cmd .= " comment '$rule->{'comment'}'";
+            }
+
+            push(@$compiled, "ipset ".$cmd);
+        }
+        else {
+            my $target = $rule->{'target'};
+            $target = '-j '.$target if $rule->{'command'} eq '-A';
+            my $mexp = join(' ', @{$rule->{'matchexp'}});
+            my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} eq '-A' && $rule->{'comment'} ne '';
+            my $texp = join(' ', @{$rule->{'targetexp'}});
+
+            my $cmd = " $rule->{'command'} $rule->{'chain'}";
+            $cmd .= " -t $rule->{'table'}" if $rule->{'table'} ne '';
+            $cmd .= " $mexp" if $mexp ne '';
+            $cmd .= " $cmt" if $cmt && $cmt ne '';
+            $cmd .= " $target";
+            $cmd .= " $texp" if $texp ne '';
+
+            if ($rule->{'family'} eq 'inet') {
+                push(@$compiled, "iptables".$cmd);
+            } elsif ($rule->{'family'} eq 'inet6') {
+                push(@$compiled, "ip6tables".$cmd);
+            } else {
+                push(@$compiled, "iptables".$cmd);
+                push(@$compiled, "ip6tables".$cmd);
+            }
         }
     }
 
@@ -407,6 +426,7 @@ sub newrule
 {
     my $scope = getscope();
     my $rule = {
+        class => 'iptables',
         family => '',
         compile => 1, # rules like 'option' set this to 0 and are ignored
         command => '-A',
@@ -787,6 +807,36 @@ sub protocheck
     }
 
     return $hasproto;
+}
+
+
+##
+# setipset
+#
+# Define the details of a set
+#
+# $name The set name
+# $options The options of the set
+#
+sub setipset
+{
+    my $name = shift;
+    my $options = shift;
+    return $sets->{$name} = $options;
+}
+
+
+##
+# getipset
+#
+# Get the details of a set
+#
+# $name The set name
+#
+sub getipset
+{
+    my $name = shift;
+    return $sets->{$name};
 }
 
 

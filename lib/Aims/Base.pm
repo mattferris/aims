@@ -21,6 +21,7 @@ use Aims::Main qw(
     getoption setoption
     addline copyline
     newscope getscope endscope
+    getipset
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Lexer qw(lex);
@@ -93,6 +94,22 @@ ontoken('T_ACTION_INCLUDE', sub {
         endscope();
     }
 });
+
+
+#
+# Handle set clause
+#
+ontoken('T_ACTION_SET', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+
+    my $rule = getrule();
+    $rule->{'class'} = 'ipset';
+});
+
 
 
 #
@@ -315,7 +332,7 @@ ontoken('T_CLAUSE_FILE', sub {
 
 
 #
-# Process the mod token
+# Handle the mod clause
 #
 ontoken('T_CLAUSE_MOD', sub {
     my $token = shift;
@@ -343,6 +360,154 @@ ontoken('T_CLAUSE_MOD', sub {
     }
 
     push(@{$rule->{'matchexp'}}, "-m $mod ".join(" ", @$matchexpr));
+});
+
+
+#
+# Handle the add clause
+#
+ontoken('T_CLAUSE_ADD', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+
+    # make sure this is a set action (starts with T_ACTION_SET)
+    if ($line->[0]->{'type'} ne 'T_ACTION_SET') {
+        error({
+            code => 'E_INVALID_ACTION',
+            file => $token->{'file'},
+            line => $token->{'line'},
+            char => $token->{'char'},
+            got  => $line->[0]->{'type'},
+            reason => 'add only valid for set rules'
+        });
+    }
+
+    my $setname = $line->[1]->{'value'};
+    my $nextt = $line->[$tpos+1];
+
+    if ($nextt->{'type'} eq 'T_ARRAY') {
+        handle('T_ARRAY', [$nextt, $tpos+1, $line]);
+        return;
+    }
+
+    my $rule = getrule();
+    $rule->{'command'} = 'add';
+    push(@{$rule->{'matchexp'}}, $nextt->{'value'});
+
+    if (defined($line->[1]->{'options'})) {
+        my $opts = $line->[1]->{'options'};
+        if (defined($opts->{'timeout'})) {
+            push(@{$rule->{'matchexp'}}, $opts->{'timeout'});
+        }
+    }
+});
+
+
+#
+# Handle the add-to clause
+#
+ontoken('T_CLAUSE_ADD_TO', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+
+    # make sure this is a match rule
+    if ($line->[0]->{'type'} ne 'T_ACTION_MATCH') {
+        error({
+            code => 'E_INVALID_ACTION',
+            file => $token->{'file'},
+            line => $token->{'line'},
+            char => $token->{'char'},
+            got => $line->[0]->{'type'},
+            reason => 'add-to online valid for match rules'
+        });
+    }
+
+    my $rule = getrule();
+
+    my $optt = $line->[$tpos+2];
+    handle('T_OPEN_PARENTHESIS', [$optt, $tpos+2, $line]);
+
+    my $sett = $line->[$tpos+1];
+
+    $rule->{'target'} = 'SET';
+    push(@{$rule->{'targetexp'}}, "--add-set $sett->{'value'}");
+
+    # process options
+    my $opts = {}; 
+    if (defined($sett->{'options'})) {
+        $opts = $sett->{'options'};
+    }
+
+    my $flags = getoption('set-flags');
+    if (defined($opts->{'flags'})) {
+        $flags = $opts->{'flags'};
+    }
+
+    push(@{$rule->{'targetexp'}}, $flags);
+    
+    if (defined($opts->{'timeout'})) {
+        push(@{$rule->{'targetexp'}}, "--timeout $opts->{'timeout'}");
+    }
+
+    if (defined($opts->{'exist'}) && $opts->{'exist'} eq 'on') {
+        push(@{$rule->{'targetexp'}}, "--exist");
+    }
+
+    my $setopts = getipset($sett->{'value'});
+    $rule->{'family'} = $setopts->{'family'};
+});
+
+
+#
+# Handle the del-from clause
+#
+ontoken('T_CLAUSE_DEL_FROM', sub {
+    my $token = shift;
+    my $tpos = shift;
+    my $line = shift;
+
+    if (ruleskipped()) { return; }
+
+    # make sure this is a match rule
+    if ($line->[0]->{'type'} ne 'T_ACTION_MATCH') {
+        error({
+            code => 'E_INVALID_ACTION',
+            file => $token->{'file'},
+            line => $token->{'line'},
+            char => $token->{'char'},
+            got => $line->[0]->{'type'},
+            reason => 'del-from online valid for match rules'
+        });
+    }
+
+    my $rule = getrule();
+
+    my $optt = $line->[$tpos+2];
+    handle('T_OPEN_PARENTHESIS', [$optt, $tpos+2, $line]);
+
+    my $sett = $line->[$tpos+1];
+
+    $rule->{'target'} = 'SET';
+    push(@{$rule->{'targetexp'}}, "--del-set $sett->{'value'}");
+
+    # process options
+    my $opts = {}; 
+    if (defined($sett->{'options'})) {
+        $opts = $sett->{'options'};
+    }
+
+    my $flags = getoption('set-flags');
+    if (defined($opts->{'flags'})) {
+        $flags = $opts->{'flags'};
+    }
+
+    push(@{$rule->{'targetexp'}}, $flags);
 });
 
 
