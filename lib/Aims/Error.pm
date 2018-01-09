@@ -67,6 +67,9 @@ my $codes = {
     E_INVALID_OPTION_VALUE => '[file]: invalid value \'[value]\' for option \'[option]\', expected [expected] '.
         'on line [line]',
 
+    E_UNDEFINED_IPSET => '[file]: undefined set \'[name]\' specified '.
+        'on line [line] at char [char]',
+
     W_BAD_FILTER_LOGIC => '[file]: bad filter logic, [reason] '.
         'on line [line] at char [char]',
 

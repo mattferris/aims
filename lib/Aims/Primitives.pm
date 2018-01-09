@@ -306,6 +306,17 @@ ontoken('T_SET', sub {
 
     my $opts;
     if (!defined($opts = getipset($setname))) {
+
+        if ($line->[0]->{'type'} ne 'T_ACTION_SET') {
+            error({
+                code => 'E_UNDEFINED_IPSET',
+                file => $token->{'file'},
+                line => $token->{'line'},
+                char => $token->{'char'},
+                name => $setname
+            });
+        }
+
         $opts = {};
     }
 
