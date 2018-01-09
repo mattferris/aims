@@ -21,7 +21,7 @@ use Aims::Main qw(
     getoption setoption
     addline copyline
     newscope getscope endscope
-    setipset
+    setipset getipset
 );
 use Aims::Error qw(error warn debug);
 use Mexpar::Lexer qw(lex);
@@ -304,6 +304,11 @@ ontoken('T_SET', sub {
     my $setname = $token->{'value'};
     my $expr;
 
+    my $opts;
+    if (!defined($opts = getipset($setname))) {
+        $opts = {};
+    }
+
     if ($rule->{'class'} eq 'ipset') {
 
         my $command = 'add';
@@ -332,7 +337,6 @@ ontoken('T_SET', sub {
             }
         }
 
-        my $opts = {};
         my $keys = ['family', 'counters', 'timeout'];
         foreach my $k (@$keys) {
             $opts->{$k} = getoption("set-$k");
@@ -345,7 +349,7 @@ ontoken('T_SET', sub {
         $nextt = $line->[$tpos+1];
 
         my $expr = "";
-        if ($command eq 'create' && $nextt->{'type'} ne 'T_CLAUSE_ADD' && $opts->{'family'} ne '') {
+        if ($command eq 'create' && $opts->{'family'} ne '') {
             if ($opts->{'family'} !~ /^(inet|inet6)$/) {
                 error({
                     code => 'E_INVALID_OPTION_VALUE',
@@ -358,7 +362,7 @@ ontoken('T_SET', sub {
             }
             push(@{$rule->{'matchexp'}}, "family $opts->{'family'}");
         }
-        if ($command eq 'create' && $nextt->{'type'} ne 'T_CLAUSE_ADD' && $opts->{'counters'} eq 'on') {
+        if ($command eq 'create' && $opts->{'counters'} eq 'on') {
             push(@{$rule->{'matchexp'}}, 'counters');
         }
         if ($opts->{'timeout'} ne '') {
@@ -406,6 +410,7 @@ ontoken('T_SET', sub {
         push(@{$rule->{'matchexp'}}, $expr);
     }
 
+    $rule->{'family'} = $opts->{'family'};
 });
 
 

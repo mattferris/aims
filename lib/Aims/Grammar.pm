@@ -164,7 +164,7 @@ $grammar = {
                 {
                   type => 'T_ACTION_SET',
                   pattern => '^(set)$',
-                  next => ['T_SET', 'T_OPEN_PARENTHESIS|T_CLAUSE_ADD|T_CLAUSE_PERSIST']
+                  next => ['T_SET', '|T_OPEN_PARENTHESIS|T_CLAUSE_ADD|T_CLAUSE_PERSIST']
                 }
               ],
             },
