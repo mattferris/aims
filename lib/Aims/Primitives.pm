@@ -357,6 +357,8 @@ ontoken('T_SET', sub {
             $opts->{$k} = $logopts->{$k};
         }
 
+        $token->{'options'} = $opts;
+
         $nextt = $line->[$tpos+1];
 
         my $expr = "";

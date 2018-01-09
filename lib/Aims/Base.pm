@@ -399,8 +399,13 @@ ontoken('T_CLAUSE_ADD', sub {
 
     if (defined($line->[1]->{'options'})) {
         my $opts = $line->[1]->{'options'};
+
         if (defined($opts->{'timeout'})) {
             push(@{$rule->{'matchexp'}}, $opts->{'timeout'});
+        }
+
+        if (defined($opts->{'exist'}) && $opts->{'exist'} eq 'on') {
+            $rule->{'command'} = '-exist add';
         }
     }
 });

@@ -73,6 +73,7 @@ my $defoptions = {
     'set-family' => 'inet',
     'set-timeout' => '',
     'set-flags' => '',
+    'set-exist' => 'on',
     'strict' => 'off',
     'ipv6' => 'on'
 };
