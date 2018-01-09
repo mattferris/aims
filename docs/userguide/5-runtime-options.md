@@ -58,6 +58,14 @@ Defaults to `state`.
 
 `state-module` determines which iptables state tracking module to use. `state` refers to `-m state`, and `conntrack` refers to `-m conntrack`. While both modules offer stateful connection tracking, `conntrack` is the newer and more fully-featured of the two. See `iptables(8)` for more information.
 
+### ipv6
+
+    option ipv6 { on | off }
+
+Defaults to `on`.
+
+When `ipv6` is set to `on`, an `ip6tables` command will be generated for every rule that doesn't reference an IPv4 address or an `inet` family set. When set to `off`, `ip6tables` commands will still be generated for rules explicitly referring to IPv6 addresses or `inet6` family sets.
+
 Logging options
 ---------------
 
@@ -96,3 +104,42 @@ When `log-tcp-options` is set to `on`, rules with `log` specified will also incl
 Defaults to `off`.
 
 When `log-uid` is set to `on`, rules with log specified will also include the UID of the user who generated the packet (if possible).
+
+Set options
+-----------
+
+### set-counters
+
+    option set-counters { on | off }
+
+Defaults to `off`.
+
+When `set-counters` is set to `on`, set's created by aims will have counters enabled by default. This can be overridden on a per-set basis via the `counters` option (i.e. `set <name> ( counters on )`.
+
+### set-family
+
+    option set-family { "inet" | "inet6" }
+
+Defaults to `inet`.
+
+Determines the default address family of sets: `inet` for IPv4, and `inet6` for IPv6. This can be overridden on a per-set basis via the `family` option (i.e. `set <name> ( family "inet" )`.
+
+### set-timeout
+
+    option set-timeout "<seconds>"
+
+If specified, determines the default timeout (in seconds) of sets. This can be overridden on a per-set basis via the `timeout` option (i.e. `set <name> ( timeout "3600" )`.
+
+### set-flags
+
+    option set-flags "<flags>"
+
+If specified, determines the default flags of set entries. This can be overridden on a per-rule basis via the `flags` option (i.e. `set <name> ( flags "src" )`). Multiple flags can be specified, separating flags with a comma (i.e. `dst,src`). Possible flags are: `dst` and `src`.
+
+### set-exist
+
+    option set-exist { on | off }
+
+Defaults to `on`.
+
+When `set-exist` is set to `on`, no errors will be generated when adding duplicate sets, or reset timers on duplicate entries to sets. This can be overridden on a per-rule basis via the `exist` option (i.e. `match for input to port 22 add-to <name> ( exist off )`)

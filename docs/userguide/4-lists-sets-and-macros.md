@@ -1,5 +1,5 @@
-Lists and Macros
-================
+Lists, Sets, and Macros
+=======================
 
 Utilizing lists and macros in your rulesets can help to reduce the amount of rules you need to maintain and make the remaining maintenance as easy as possible.
 
@@ -62,6 +62,35 @@ and the ruleset contains
 this is equivalent to writing
 
     accept in eth0 proto tcp from { 192.168.0.34, 192.168.0.47 } to port 22
+
+Sets
+----
+
+For cases where rulesets need to match a large number of addresses, or the contents of the list need to be dynamically updated, sets can be used. Built on `ipset`, these sets can be specified anywhere an address can be specified.
+
+    set <blocked_hosts>
+    drop in eth0 from <blocked_hosts>
+
+If the set `blocked_hosts` doesn't already exist, it will be created. Once the ruleset is loaded, `ipset` can the be used to add addresses to the set (i.e. `ipset add blocked_hosts 192.168.10.95`). If a set has already been defined using `ipset` before loading the ruleset, it must still be defined in the ruleset before it can be used.
+
+When defining a set, a list of addresses can be provided to preload the set. The list of addresses can also be loaded from a file.
+
+    set <blocked_hosts> add { 10.10.10.234, 172.16.89.154 }
+    set <blocked_hosts> add file "ips.txt"
+
+Sets must have a defined address family: `inet` for IPv4, and `inet6` for IPv6. By default, sets are `inet`. This can be changed using the `family` option.
+
+    set <blocked_hosts> ( family "inet6" ) add { ... }
+
+The contents of a set can be updated using `match` rules. Matching source and destination addresses can be added to a specified list using `add-to` and `del-from` clauses.
+
+    set <blocked_hosts>
+    drop in eth0 from <blocked_hosts>
+    match in eth0 proto tcp to port 22 add-to <blocked_hosts> ( flags "src", timeout "300" )
+
+The `flags` option is used to specify whether a source address `src`, destination address `dst` or both `src,dst` in matching packets are added to the set. In the case above, hosts trying to connect to SSH will automatically be added the the `blocked_hosts` set for 300 seconds, with subsequent packets matching the drop rule.
+
+The contents of sets will be preserved across ruleset reloads and will only be cleared on reboot, or via calls to `ipset`.
 
 Macros
 ------
