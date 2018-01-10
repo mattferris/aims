@@ -1,6 +1,6 @@
 % aims.rules(5) aims rule syntax
 % Matt Ferris <matt@bueller.ca>
-% May 14, 2014
+% January 8, 2018
 
 # NAME
 
@@ -356,6 +356,35 @@ this is equivalent to writing
 
     accept in eth0 proto tcp from { 192.168.0.34, 192.168.0.47 } to port 22
 
+Sets
+----
+
+For cases where rulesets need to match a large number of addresses, or the contents of the list need to be dynamically updated, sets can be used. Built on `ipset`, these sets can be specified anywhere an address can be specified.
+
+    set <blocked_hosts>
+    drop in eth0 from <blocked_hosts>
+
+If the set `blocked_hosts` doesn't already exist, it will be created. Once the ruleset is loaded, `ipset` can the be used to add addresses to the set (i.e. `ipset add blocked_hosts 192.168.10.95`). If a set has already been defined using `ipset` before loading the ruleset, it must still be defined in the ruleset before it can be used.
+
+When defining a set, a list of addresses can be provided to preload the set. The list of addresses can also be loaded from a file.
+
+    set <blocked_hosts> add { 10.10.10.234, 172.16.89.154 }
+    set <blocked_hosts> add file "ips.txt"
+
+Sets must have a defined address family: `inet` for IPv4, and `inet6` for IPv6. By default, sets are `inet`. This can be changed using the `family` option.
+
+    set <blocked_hosts> ( family "inet6" ) add { ... }
+
+The contents of a set can be updated using `match` rules. Matching source and destination addresses can be added to a specified list using `add-to` and `del-from` clauses.
+
+    set <blocked_hosts>
+    drop in eth0 from <blocked_hosts>
+    match in eth0 proto tcp to port 22 add-to <blocked_hosts> ( flags "src", timeout "300" )
+
+The `flags` option is used to specify whether a source address `src`, destination address `dst` or both `src,dst` in matching packets are added to the set. In the case above, hosts trying to connect to SSH will automatically be added the the `blocked_hosts` set for 300 seconds, with subsequent packets matching the drop rule.
+
+The contents of sets will be preserved across ruleset reloads and will only be cleared on reboot, or via calls to `ipset`.
+
 Macros
 ------
 
@@ -451,6 +480,16 @@ Defaults to `state`.
 
 `state-module` determines which iptables state tracking module to use. `state` refers to `-m state`, and `conntrack` refers to `-m conntrack`. While both modules offer stateful connection tracking, `conntrack` is the newer and more fully-featured of the two. See `iptables(8)` for more information.
 
+### ipv6
+
+    option ipv6 { on | off }
+
+Defaults to `on`.
+
+When `ipv6` is set to `on`, an `ip6tables` command will be generated for every rule that doesn't reference an IPv4 addr
+ess or an `inet` family set. When set to `off`, `ip6tables` commands will still be generated for rules explicitly refer
+ring to IPv6 addresses or `inet6` family sets.
+
 Logging options
 ---------------
 
@@ -489,6 +528,45 @@ When `log-tcp-options` is set to `on`, rules with `log` specified will also incl
 Defaults to `off`.
 
 When `log-uid` is set to `on`, rules with log specified will also include the UID of the user who generated the packet (if possible).
+
+Set options
+-----------
+
+### set-counters
+
+    option set-counters { on | off }
+
+Defaults to `off`.
+
+When `set-counters` is set to `on`, set's created by aims will have counters enabled by default. This can be overridden on a per-set basis via the `counters` option (i.e. `set <name> ( counters on )`.
+
+### set-family
+
+    option set-family { "inet" | "inet6" }
+
+Defaults to `inet`.
+
+Determines the default address family of sets: `inet` for IPv4, and `inet6` for IPv6. This can be overridden on a per-set basis via the `family` option (i.e. `set <name> ( family "inet" )`.
+
+### set-timeout
+
+    option set-timeout "<seconds>"
+
+If specified, determines the default timeout (in seconds) of sets. This can be overridden on a per-set basis via the `timeout` option (i.e. `set <name> ( timeout "3600" )`.
+
+### set-flags
+
+    option set-flags "<flags>"
+
+If specified, determines the default flags of set entries. This can be overridden on a per-rule basis via the `flags` option (i.e. `set <name> ( flags "src" )`). Multiple flags can be specified, separating flags with a comma (i.e. `dst,src`). Possible flags are: `dst` and `src`.
+
+### set-exist
+
+    option set-exist { on | off }
+
+Defaults to `on`.
+
+When `set-exist` is set to `on`, no errors will be generated when adding duplicate sets, or reset timers on duplicate entries to sets. This can be overridden on a per-rule basis via the `exist` option (i.e. `match for input to port 22 add-to <name> ( exist off )`)
 
 COMMENTS, LOGGING AND INCLUDES
 =============================
