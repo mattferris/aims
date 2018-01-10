@@ -97,8 +97,11 @@ sub lex
     }
 
     # collect any remaining matched token
-    if (defined($curmatch) && isgoodt($grammar, $curmatch->{'type'})) {
-        push(@$tokens, $curmatch);
+    if (defined($curmatch)) {
+        # check if the token is good
+        if (isgoodt($grammar, $curmatch->{'type'})) {
+            push(@$tokens, $curmatch);
+        }
     }
     elsif ($symbol ne '') {
         error({
