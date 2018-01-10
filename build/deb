@@ -17,7 +17,7 @@ fi
 mkdir -p /tmp/$pkgname-build/DEBIAN \
          /tmp/$pkgname-build/usr/bin \
          /tmp/$pkgname-build/usr/share/$pkgname \
-         /tmp/$pkgname-build/usr/lib/$pkgname
+         /tmp/$pkgname-build/usr/share/perl5
 
 cp -rp $pkgdir/build/meta/debian/* /tmp/$pkgname-build/DEBIAN/
 
@@ -28,7 +28,7 @@ git archive $1 -o /tmp/$pkgname-build/usr/share/$pkgname/tmp.tar
     tar xf tmp.tar
     rm -r tmp.tar build
     mv ./bin/* /tmp/$pkgname-build/usr/bin
-    mv ./lib/* /tmp/$pkgname-build/usr/lib
+    mv ./lib/* /tmp/$pkgname-build/usr/share/perl5
 )
 
 (
