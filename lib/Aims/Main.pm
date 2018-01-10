@@ -160,7 +160,7 @@ sub compile
             $cmd .= " ".join(' ', @{$rule->{'matchexp'}});
 
             if (defined($rule->{'comment'}) && $rule->{'comment'} ne '') {
-                $cmd .= " comment '$rule->{'comment'}'";
+                $cmd .= " comment \"$rule->{'comment'}\"";
             }
 
             push(@$compiled, "ipset ".$cmd);
@@ -169,7 +169,7 @@ sub compile
             my $target = $rule->{'target'};
             $target = '-j '.$target if $rule->{'command'} eq '-A';
             my $mexp = join(' ', @{$rule->{'matchexp'}});
-            my $cmt = "-m comment --comment '$rule->{'comment'}'" if $rule->{'command'} eq '-A' && $rule->{'comment'} ne '';
+            my $cmt = "-m comment --comment \"$rule->{'comment'}\"" if $rule->{'command'} eq '-A' && $rule->{'comment'} ne '';
             my $texp = join(' ', @{$rule->{'targetexp'}});
 
             my $cmd = " $rule->{'command'} $rule->{'chain'}";

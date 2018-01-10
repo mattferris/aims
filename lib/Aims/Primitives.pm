@@ -202,6 +202,8 @@ ontoken('T_COMMENT', sub {
     else {
         my $cmt = $token->{'value'};
         $cmt =~ s/^#+\s*|^\s+|\s+$//;
+        # escape circumflex so shell won't interpret it
+        $cmt =~ s/\$/\\\$/g;
         setcomment($cmt);
     }
 });
